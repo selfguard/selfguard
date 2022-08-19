@@ -1,10 +1,6 @@
 import axios from "axios";
-import Session from "supertokens-auth-react/recipe/session";
-Session.addAxiosInterceptors(axios);
 
-let apiDomain = 'https://api.selfguard.xyz';
-
-export async function createAPIKey(){
+export async function createAPIKey(apiDomain){
   try {
     // let data = await callSG('/sessioninfo',null, null, "POST",jwt);
     let result = await axios.get(apiDomain + "/createAPIKey");
@@ -15,7 +11,7 @@ export async function createAPIKey(){
   }
 }
 
-export async function retrieveAPIKey(){
+export async function retrieveAPIKey(apiDomain){
   try {
     let result = await axios.get(apiDomain + "/retrieveAPIKey");
     return result.data;
@@ -26,7 +22,7 @@ export async function retrieveAPIKey(){
 }
 
 //Data Key Setters and Getters
-export async function saveEncryptionKey(api_key,key) {
+export async function saveEncryptionKey(apiDomain,api_key,key) {
   try {
     let result = await axios.post(apiDomain + "/saveEncryptionKey",{data:{api_key,key}});
     return result.data;
@@ -36,7 +32,7 @@ export async function saveEncryptionKey(api_key,key) {
   }
 }
 
-export async function retrieveEncryptionKey(api_key,id) {
+export async function retrieveEncryptionKey(apiDomain,api_key,id) {
   try {
     let result = await axios.post(apiDomain + "/retrieveEncryptionKey",{data:{api_key,id}});
     return result.data;
@@ -47,7 +43,7 @@ export async function retrieveEncryptionKey(api_key,id) {
 }
 
 //Public/Private Key Setters and Getters
-export async function saveKeyPair(api_key, public_key, encrypted_private_key){
+export async function saveKeyPair(apiDomain,api_key, public_key, encrypted_private_key){
   try {
     let result = await axios.post(apiDomain + "/saveKeyPair",{data:{api_key,public_key, encrypted_private_key}});
     return result.data;
@@ -57,7 +53,7 @@ export async function saveKeyPair(api_key, public_key, encrypted_private_key){
   }
 }
 
-export async function retrieveKeyPair(api_key){
+export async function retrieveKeyPair(apiDomain,api_key){
   try {
     let result = await axios.post(apiDomain + "/retrieveKeyPair",{data:{api_key}});
     return result.data;

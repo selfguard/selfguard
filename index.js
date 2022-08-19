@@ -5,7 +5,8 @@ import ee from 'easy-encryption';
 
 //sanitize all functions and do exception checking
 export default class SelfGuard {
-  constructor(api_key, public_key, private_key) {
+  constructor(api_domain,api_key, public_key, private_key) {
+    this.api_domain = api_domain;
     this.api_key = api_key;
     this.public_key = public_key;
     this.private_key = private_key;
@@ -66,7 +67,7 @@ export default class SelfGuard {
 
   //Download Data Keys & Key Pair
   async downloadEncryptionKey(id){
-    let encryption_key = await retrieveEncryptionKey(this.api_key,id);
+    let encryption_key = await retrieveEncryptionKey(this.api_domain,this.api_key,id);
     if(this.public_key){
       encryption_key = this.unwrapWithPrivateKey(encryption_key, this.private_key);
     }
@@ -74,7 +75,7 @@ export default class SelfGuard {
   }
 
   async downloadKeyPair(password){
-    let data = await retrieveKeyPair(this.api_key);
+    let data = await retrieveKeyPair(this.api_domain,this.api_key);
     let private_key = ee.decrypt(password, data.encrypted_private_key);
     return {public_key: data.public_key, private_key};
   }
@@ -82,13 +83,13 @@ export default class SelfGuard {
   //Upload Data Key & Key Pair
   async uploadEncryptionKey(encryption_key){
     if(this.public_key) encryption_key = this.wrapWithPublicKey(encryption_key, this.public_key);
-    let data = await saveEncryptionKey(this.api_key, encryption_key);
+    let data = await saveEncryptionKey(this.api_domain,this.api_key, encryption_key);
     console.log({data});
     return data;
   }
 
   async uploadKeyPair(public_key, encrypted_private_key){
-    let data = await saveKeyPair(this.api_key, public_key, encrypted_private_key);
+    let data = await saveKeyPair(this.api_domain,this.api_key, public_key, encrypted_private_key);
     return data;
   }
 
