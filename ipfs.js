@@ -1,12 +1,11 @@
 import { Web3Storage } from 'web3.storage';
-let token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDQxRjQ1QTY3NDQzRGJDNmQ3N0NEOThFYjJDZDVFZThERjRDMTlCYjciLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NTg5NTI4NTYxOTksIm5hbWUiOiJ0ZXN0In0.I-fSz9b0Thg3nC5bnHHURoYiaXKHC9E3dcvJM7IdV4A';
 
-function makeStorageClient () {
+function makeStorageClient (token) {
   return new Web3Storage({ token })
 }
 
-export async function retrieveFiles (cid) {
-  const client = makeStorageClient()
+export async function retrieveFiles (token,cid) {
+  const client = makeStorageClient(token)
   const res = await client.get(cid)
 
   if (!res.ok) {
@@ -18,7 +17,6 @@ export async function retrieveFiles (cid) {
   // let fileText = await file.text();
   return file;
 }
-
 
 export async function calculateFileHash(file){
   return new Promise((resolve,reject)=>{
@@ -40,7 +38,7 @@ export async function calculateFileHash(file){
   });
 }
 
-export async function storeWithProgress (files) {
+export async function storeWithProgress (token,files) {
   return new Promise((resolve,reject)=>{
     // when each chunk is stored, update the percentage complete and display
     const totalSize = files.map(f => f.size).reduce((a, b) => a + b, 0)
@@ -60,7 +58,7 @@ export async function storeWithProgress (files) {
         // setFileName(null);
       }
     }
-    const client = makeStorageClient()
+    const client = makeStorageClient(token)
     return client.put(files, { onRootCidReady, onStoredChunk })
   });
 }
