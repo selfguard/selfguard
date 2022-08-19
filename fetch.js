@@ -1,0 +1,88 @@
+import axios from "axios";
+import Session from "supertokens-auth-react/recipe/session";
+Session.addAxiosInterceptors(axios);
+
+let apiDomain = 'https://api.selfguard.xyz';
+
+export async function createAPIKey(){
+  try {
+    // let data = await callSG('/sessioninfo',null, null, "POST",jwt);
+    let result = await axios.get(apiDomain + "/createAPIKey");
+    return result.data;
+  }
+  catch(err){
+    console.log({err});
+  }
+}
+
+export async function retrieveAPIKey(){
+  try {
+    let result = await axios.get(apiDomain + "/retrieveAPIKey");
+    return result.data;
+  }
+  catch(err){
+    console.log({err});
+  }
+}
+
+//Data Key Setters and Getters
+export async function saveEncryptionKey(api_key,key) {
+  try {
+    let result = await axios.post(apiDomain + "/saveEncryptionKey",{data:{api_key,key}});
+    return result.data;
+  }
+  catch(err){
+    console.log({err});
+  }
+}
+
+export async function retrieveEncryptionKey(api_key,id) {
+  try {
+    let result = await axios.post(apiDomain + "/retrieveEncryptionKey",{data:{api_key,id}});
+    return result.data;
+  }
+  catch(err){
+    console.log({err});
+  }
+}
+
+//Public/Private Key Setters and Getters
+export async function saveKeyPair(api_key, public_key, encrypted_private_key){
+  try {
+    let result = await axios.post(apiDomain + "/saveKeyPair",{data:{api_key,public_key, encrypted_private_key}});
+    return result.data;
+  }
+  catch(err){
+    console.log({err});
+  }
+}
+
+export async function retrieveKeyPair(api_key){
+  try {
+    let result = await axios.post(apiDomain + "/retrieveKeyPair",{data:{api_key}});
+    return result.data;
+  }
+  catch(err){
+    console.log({err});
+  }
+}
+
+//
+// let callSG = async (url, api_key, data, method, jwt) => {
+//   let headers = {
+//     'content-type': 'application/json',
+//     'Connection':'keep-alive',
+//     'api_key': api_key,
+//   }
+//   if(jwt) headers['Authorization'] = `Bearer ${jwt}`;
+//   Session.addAxiosInterceptors(axios);
+//
+//   const response = await axios({
+//     url: apiDomain + url,
+//     method,
+//     headers,
+//     data
+//   });
+//   let json = await response.json();
+//   return json;
+// }
