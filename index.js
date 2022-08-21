@@ -1,15 +1,32 @@
 import {encryptText, encryptFile, decryptText, decryptFile} from './encryption.js';
-import {saveEncryptionKey, retrieveEncryptionKey, saveKeyPair, retrieveKeyPair} from './fetch.js';
+import {saveEncryptionKey, retrieveEncryptionKey, saveKeyPair, retrieveKeyPair, saveTokenizedData, retrieveTokenizedData} from './fetch.js';
 import QuickEncrypt from 'quick-encrypt';
 import ee from 'easy-encryption';
+import { v4 as uuidv4 } from 'uuid';
 
 //sanitize all functions and do exception checking
 export default class SelfGuard {
+
   constructor(api_domain,api_key, public_key, private_key) {
     this.api_domain = api_domain;
     this.api_key = api_key;
     this.public_key = public_key;
     this.private_key = private_key;
+  }
+
+  //Tokenization Functions
+  async tokenize(data) {
+    let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(data));
+    let id = "tok_"+uuidv4();
+    await this.uploadTokenizedData(id,encryption_key_id, encrypted_text);
+    return id;
+  }
+
+  //TODO automatic key rotation
+  async detokenize(id) {
+    let {encryption_key_id, encrypted_text} = await this.downloadTokenizedData(id);
+    let decrypted_data = await this.decrypt(encrypted_text,encryption_key_id);
+    return JSON.parse(decrypted_data);
   }
 
   //Encrypt Functions
@@ -65,7 +82,17 @@ export default class SelfGuard {
     return encryption_key;
   }
 
-  //Download Data Keys & Key Pair
+  //Download Tokenized Data, Data Keys & Key Pairs
+  async downloadTokenizedData(id){
+    let {encrypted_text,encryption_key_id} = await retrieveTokenizedData(this.api_domain,this.api_key,id);
+    return {encrypted_text,encryption_key_id} ;
+  }
+
+  async uploadTokenizedData(id,encryption_key_id, encrypted_text){
+    let data = await saveTokenizedData(this.api_domain,this.api_key,id, encrypted_text, encryption_key_id);
+    return data;
+  }
+
   async downloadEncryptionKey(id){
     let encryption_key = await retrieveEncryptionKey(this.api_domain,this.api_key,id);
     if(this.public_key){
@@ -82,9 +109,10 @@ export default class SelfGuard {
 
   //Upload Data Key & Key Pair
   async uploadEncryptionKey(encryption_key){
-    if(this.public_key) encryption_key = this.wrapWithPublicKey(encryption_key, this.public_key);
+    if(this.public_key) {
+      encryption_key = this.wrapWithPublicKey(encryption_key, this.public_key);
+    }
     let data = await saveEncryptionKey(this.api_domain,this.api_key, encryption_key);
-    console.log({data});
     return data;
   }
 

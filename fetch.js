@@ -1,9 +1,9 @@
 import axios from "axios";
 
-export async function createAPIKey(apiDomain){
+export async function createAPIKey(axios,apiDomain){
   try {
     // let data = await callSG('/sessioninfo',null, null, "POST",jwt);
-    let result = await axios.get(apiDomain + "/createAPIKey");
+    let result = await axios.post(apiDomain + "/createAPIKey");
     return result.data;
   }
   catch(err){
@@ -11,9 +11,9 @@ export async function createAPIKey(apiDomain){
   }
 }
 
-export async function retrieveAPIKey(apiDomain){
+export async function retrieveAPIKey(axios,apiDomain){
   try {
-    let result = await axios.get(apiDomain + "/retrieveAPIKey");
+    let result = await axios.post(apiDomain + "/retrieveAPIKey");
     return result.data;
   }
   catch(err){
@@ -56,6 +56,27 @@ export async function saveKeyPair(apiDomain,api_key, public_key, encrypted_priva
 export async function retrieveKeyPair(apiDomain,api_key){
   try {
     let result = await axios.post(apiDomain + "/retrieveKeyPair",{data:{api_key}});
+    return result.data;
+  }
+  catch(err){
+    console.log({err});
+  }
+}
+
+export async function saveTokenizedData(apiDomain, api_key,id, encrypted_text, encryption_key_id){
+  try {
+    let result = await axios.post(apiDomain + "/saveTokenizedData",{data:{api_key,id,encrypted_text, encryption_key_id}});
+    return result.data;
+  }
+  catch(err){
+    console.log({err});
+  }
+}
+
+
+export async function retrieveTokenizedData(apiDomain, api_key, id){
+  try {
+    let result = await axios.post(apiDomain + "/retrieveTokenizedData",{data:{api_key,id}});
     return result.data;
   }
   catch(err){

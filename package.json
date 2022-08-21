@@ -9,6 +9,8 @@
     "axios": "^0.27.2",
     "easy-encryption": "^0.1.1",
     "quick-encrypt": "^1.0.8",
+    "supertokens-auth-react": "^0.24.6",
+    "uuid": "^8.3.2",
     "web3.storage": "^4.3.0"
   },
   "type": "module"
