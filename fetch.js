@@ -73,6 +73,16 @@ export async function saveTokenizedData(apiDomain, api_key,id, encrypted_text, e
   }
 }
 
+export async function updateTokenizedData(apiDomain, api_key, id, encrypted_text, encryption_key_id){
+  try {
+    let result = await axios.post(apiDomain + "/updateTokenizedData",{data:{api_key,id,encrypted_text, encryption_key_id}});
+    return result.data;
+  }
+  catch(err){
+    console.log({err});
+  }
+}
+
 
 export async function retrieveTokenizedData(apiDomain, api_key, id){
   try {

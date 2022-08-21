@@ -1,5 +1,5 @@
 import {encryptText, encryptFile, decryptText, decryptFile} from './encryption.js';
-import {saveEncryptionKey, retrieveEncryptionKey, saveKeyPair, retrieveKeyPair, saveTokenizedData, retrieveTokenizedData} from './fetch.js';
+import {saveEncryptionKey, retrieveEncryptionKey, saveKeyPair, retrieveKeyPair, saveTokenizedData, retrieveTokenizedData, updateTokenizedData} from './fetch.js';
 import QuickEncrypt from 'quick-encrypt';
 import ee from 'easy-encryption';
 import { v4 as uuidv4 } from 'uuid';
@@ -26,6 +26,12 @@ export default class SelfGuard {
   async detokenize(id) {
     let {encryption_key_id, encrypted_text} = await this.downloadTokenizedData(id);
     let decrypted_data = await this.decrypt(encrypted_text,encryption_key_id);
+    console.log({decrypted_data});
+    //rotate encryption key
+    let encrypted = await this.encrypt(decrypted_data);
+    console.log({encrypted});
+    let update = await this.rotateTokenizedData(id,encrypted.encryption_key_id, encrypted.encrypted_text);
+    console.log({update});
     return JSON.parse(decrypted_data);
   }
 
@@ -86,6 +92,11 @@ export default class SelfGuard {
   async downloadTokenizedData(id){
     let {encrypted_text,encryption_key_id} = await retrieveTokenizedData(this.api_domain,this.api_key,id);
     return {encrypted_text,encryption_key_id} ;
+  }
+
+  async rotateTokenizedData(id,encryption_key_id, encrypted_text){
+    let data = await updateTokenizedData(this.api_domain,this.api_key, id, encrypted_text, encryption_key_id);
+    return data;
   }
 
   async uploadTokenizedData(id,encryption_key_id, encrypted_text){
