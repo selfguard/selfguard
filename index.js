@@ -22,16 +22,12 @@ export default class SelfGuard {
     return id;
   }
 
-  //TODO automatic key rotation
   async detokenize(id) {
     let {encryption_key_id, encrypted_text} = await this.downloadTokenizedData(id);
     let decrypted_data = await this.decrypt(encrypted_text,encryption_key_id);
-    console.log({decrypted_data});
     //rotate encryption key
     let encrypted = await this.encrypt(decrypted_data);
-    console.log({encrypted});
     let update = await this.rotateTokenizedData(id,encrypted.encryption_key_id, encrypted.encrypted_text);
-    console.log({update});
     return JSON.parse(decrypted_data);
   }
 
@@ -99,11 +95,6 @@ export default class SelfGuard {
     return data;
   }
 
-  async uploadTokenizedData(id,encryption_key_id, encrypted_text){
-    let data = await saveTokenizedData(this.api_domain,this.api_key,id, encrypted_text, encryption_key_id);
-    return data;
-  }
-
   async downloadEncryptionKey(id){
     let encryption_key = await retrieveEncryptionKey(this.api_domain,this.api_key,id);
     if(this.public_key){
@@ -118,7 +109,12 @@ export default class SelfGuard {
     return {public_key: data.public_key, private_key};
   }
 
-  //Upload Data Key & Key Pair
+  //Upload Tokenization Data, Encryption Data Key & Key Pair
+
+  async uploadTokenizedData(id,encryption_key_id, encrypted_text){
+    let data = await saveTokenizedData(this.api_domain,this.api_key,id, encrypted_text, encryption_key_id);
+    return data;
+  }
   async uploadEncryptionKey(encryption_key){
     if(this.public_key) {
       encryption_key = this.wrapWithPublicKey(encryption_key, this.public_key);

@@ -17,7 +17,7 @@ async function extractPassphraseKey(passphrase){
 	return passphrasekey
 }
 
-async function extractBytes(pbkdf2salt, passphrasekey, type){
+async function extractKeyBytes(pbkdf2salt, passphrasekey, type){
 	try {
 		var pbkdf2bytes = await window.crypto.subtle.deriveBits({"name": 'PBKDF2', "salt": pbkdf2salt, "iterations": pbkdf2iterations, "hash": 'SHA-256'}, passphrasekey, 384).catch(function(err){});
 		pbkdf2bytes = new Uint8Array(pbkdf2bytes);
@@ -40,7 +40,6 @@ function extractCipherAndSalt(bytes){
 
 //Generation
 async function generateKeys(){
-	//generate passphrase
 	let key1 = await window.crypto.subtle.generateKey({name: "AES-CBC",length: 256},true,["encrypt", "decrypt"]);
 	let bytes1 = await window.crypto.subtle.exportKey('raw',key1);
 	let passphrase = Buffer.from(bytes1).toString('hex')
@@ -48,7 +47,7 @@ async function generateKeys(){
 	let pbkdf2salt = window.crypto.getRandomValues(new Uint8Array(8));
 	var passphrasekey = await extractPassphraseKey(passphrase);
 
-	let {key, ivbytes} = await extractBytes(pbkdf2salt, passphrasekey, 'encrypt');
+	let {key, ivbytes} = await extractKeyBytes(pbkdf2salt, passphrasekey, 'encrypt');
 	return {ivbytes, key, passphrase, pbkdf2salt};
 }
 
@@ -102,7 +101,7 @@ export async function encryptText(text){
 async function decryptBytes(bytes, passphrase){
 	let {pbkdf2salt, cipherbytes} = extractCipherAndSalt(bytes);
 	var passphrasekey = await extractPassphraseKey(passphrase);
-	let {key, ivbytes} = await extractBytes(pbkdf2salt, passphrasekey, 'decrypt');
+	let {key, ivbytes} = await extractKeyBytes(pbkdf2salt, passphrasekey, 'decrypt');
 
 	var plaintextbytes = await window.crypto.subtle.decrypt({name: "AES-CBC", iv: ivbytes}, key, cipherbytes).catch(function(err){});
 
