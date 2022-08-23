@@ -7,8 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
 //sanitize all functions and do exception checking
 export default class SelfGuard {
 
-  constructor(api_domain,api_key, public_key, private_key) {
-    this.api_domain = api_domain;
+  constructor(api_key, public_key, private_key, api_domain) {
+    this.api_domain = api_domain || "https://api.selfguard.xyz";
     this.api_key = api_key;
 
     this.public_key = public_key; //optional
@@ -30,9 +30,9 @@ export default class SelfGuard {
     //rotate encryption key
     (async ()=>{
       let encrypted = await this.encrypt(decrypted_data);
-      let update = await this.rotateTokenizedData(id,encrypted.encryption_key_id, encrypted.encrypted_text);  
+      let update = await this.rotateTokenizedData(id,encrypted.encryption_key_id, encrypted.encrypted_text);
     })()
- 
+
     return JSON.parse(decrypted_data);
   }
 
