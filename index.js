@@ -10,8 +10,9 @@ export default class SelfGuard {
   constructor(api_domain,api_key, public_key, private_key) {
     this.api_domain = api_domain;
     this.api_key = api_key;
-    this.public_key = public_key;
-    this.private_key = private_key;
+
+    this.public_key = public_key; //optional
+    this.private_key = private_key; //optional
   }
 
   //Tokenization Functions
@@ -25,9 +26,13 @@ export default class SelfGuard {
   async detokenize(id) {
     let {encryption_key_id, encrypted_text} = await this.downloadTokenizedData(id);
     let decrypted_data = await this.decrypt(encrypted_text,encryption_key_id);
+
     //rotate encryption key
-    let encrypted = await this.encrypt(decrypted_data);
-    let update = await this.rotateTokenizedData(id,encrypted.encryption_key_id, encrypted.encrypted_text);
+    (async ()=>{
+      let encrypted = await this.encrypt(decrypted_data);
+      let update = await this.rotateTokenizedData(id,encrypted.encryption_key_id, encrypted.encrypted_text);  
+    })()
+ 
     return JSON.parse(decrypted_data);
   }
 
