@@ -2,7 +2,6 @@ import axios from "axios";
 
 export async function createAPIKey(axios,apiDomain){
   try {
-    // let data = await callSG('/sessioninfo',null, null, "POST",jwt);
     let result = await axios.post(apiDomain + "/createAPIKey");
     return result.data;
   }
@@ -93,23 +92,3 @@ export async function retrieveTokenizedData(apiDomain, api_key, id){
     console.log({err});
   }
 }
-
-//
-// let callSG = async (url, api_key, data, method, jwt) => {
-//   let headers = {
-//     'content-type': 'application/json',
-//     'Connection':'keep-alive',
-//     'api_key': api_key,
-//   }
-//   if(jwt) headers['Authorization'] = `Bearer ${jwt}`;
-//   Session.addAxiosInterceptors(axios);
-//
-//   const response = await axios({
-//     url: apiDomain + url,
-//     method,
-//     headers,
-//     data
-//   });
-//   let json = await response.json();
-//   return json;
-// }
