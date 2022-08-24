@@ -7,7 +7,6 @@ try {
 }
 catch(err) {
 	crypto = (await import('node:crypto')).webcrypto;
-	console.log(crypto);
 }
 
 var pbkdf2iterations=10000;
