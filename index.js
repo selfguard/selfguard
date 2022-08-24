@@ -120,6 +120,7 @@ export default class SelfGuard {
     let data = await saveTokenizedData(this.api_domain,this.api_key,id, encrypted_text, encryption_key_id);
     return data;
   }
+
   async uploadEncryptionKey(encryption_key){
     if(this.public_key) {
       encryption_key = this.wrapWithPublicKey(encryption_key, this.public_key);
@@ -132,6 +133,5 @@ export default class SelfGuard {
     let data = await saveKeyPair(this.api_domain,this.api_key, public_key, encrypted_private_key);
     return data;
   }
-
 
 }

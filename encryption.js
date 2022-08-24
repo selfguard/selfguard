@@ -1,10 +1,13 @@
-let subtle = null;
+let crypto = null;
 
-if(window){
-	subtle = window.crypto.subtle;
+try {
+	if(window){
+		crypto = window.crypto;
+	}
 }
-else {
-	subtle = require('node:crypto').webcrypto.subtle;
+catch(err) {
+	crypto = (await import('node:crypto')).webcrypto;
+	console.log(crypto);
 }
 
 var pbkdf2iterations=10000;
@@ -22,17 +25,17 @@ function readfile(file){
 //Extraction
 async function extractPassphraseKey(passphrase){
 	var passphrasebytes = new TextEncoder("utf-8").encode(passphrase);
-	var passphrasekey = await subtle.importKey('raw', passphrasebytes, {name: 'PBKDF2'}, false, ['deriveBits']).catch(function(err){});
+	var passphrasekey = await crypto.subtle.importKey('raw', passphrasebytes, {name: 'PBKDF2'}, false, ['deriveBits']).catch(function(err){});
 	return passphrasekey
 }
 
 async function extractKeyBytes(pbkdf2salt, passphrasekey, type){
 	try {
-		var pbkdf2bytes = await subtle.deriveBits({"name": 'PBKDF2', "salt": pbkdf2salt, "iterations": pbkdf2iterations, "hash": 'SHA-256'}, passphrasekey, 384).catch(function(err){});
+		var pbkdf2bytes = await crypto.subtle.deriveBits({"name": 'PBKDF2', "salt": pbkdf2salt, "iterations": pbkdf2iterations, "hash": 'SHA-256'}, passphrasekey, 384).catch(function(err){});
 		pbkdf2bytes = new Uint8Array(pbkdf2bytes);
 		let keybytes=pbkdf2bytes.slice(0,32);
 		let ivbytes=pbkdf2bytes.slice(32);
-		var key = await subtle.importKey('raw', keybytes, {name: 'AES-CBC', length: 256}, false, [type]).catch(function(err){console.log({err})});
+		var key = await crypto.subtle.importKey('raw', keybytes, {name: 'AES-CBC', length: 256}, false, [type]).catch(function(err){console.log({err})});
 		return {key,ivbytes,pbkdf2bytes}
 	}
 	catch(err){
@@ -49,11 +52,11 @@ function extractCipherAndSalt(bytes){
 
 //Generation
 async function generateKeys(){
-	let key1 = await subtle.generateKey({name: "AES-CBC",length: 256},true,["encrypt", "decrypt"]);
-	let bytes1 = await subtle.exportKey('raw',key1);
+	let key1 = await crypto.subtle.generateKey({name: "AES-CBC",length: 256},true,["encrypt", "decrypt"]);
+	let bytes1 = await crypto.subtle.exportKey('raw',key1);
 	let passphrase = Buffer.from(bytes1).toString('hex')
 
-	let pbkdf2salt = window.crypto.getRandomValues(new Uint8Array(8));
+	let pbkdf2salt = crypto.getRandomValues(new Uint8Array(8));
 	var passphrasekey = await extractPassphraseKey(passphrase);
 
 	let {key, ivbytes} = await extractKeyBytes(pbkdf2salt, passphrasekey, 'encrypt');
@@ -63,7 +66,7 @@ async function generateKeys(){
 //encrypt raw bytes with generated passphrase key
 async function encryptBytes(plaintextbytes,{ivbytes, key, passphrase, pbkdf2salt}){
 	try {
-		var cipherbytes= await subtle.encrypt({name: "AES-CBC", iv: ivbytes}, key, plaintextbytes).catch(function(err){});
+		var cipherbytes= await crypto.subtle.encrypt({name: "AES-CBC", iv: ivbytes}, key, plaintextbytes).catch(function(err){});
 
 		if(!cipherbytes) return;
 
@@ -112,7 +115,7 @@ async function decryptBytes(bytes, passphrase){
 	var passphrasekey = await extractPassphraseKey(passphrase);
 	let {key, ivbytes} = await extractKeyBytes(pbkdf2salt, passphrasekey, 'decrypt');
 
-	var plaintextbytes = await subtle.decrypt({name: "AES-CBC", iv: ivbytes}, key, cipherbytes).catch(function(err){});
+	var plaintextbytes = await crypto.subtle.decrypt({name: "AES-CBC", iv: ivbytes}, key, cipherbytes).catch(function(err){});
 
 	if (!plaintextbytes) return;
 	return new Uint8Array(plaintextbytes);
