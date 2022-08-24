@@ -60,7 +60,7 @@ console.log({encrypted_text,encryption_key_id})
 
 ```javascript
 
-let {encrypted_text, encryption_key_id} = await sg.decrypt(encrypted_text, encryption_key_id)
+let decryptedText = await sg.decrypt(encrypted_text, encryption_key_id)
 
 console.log(decryptedText)
 // "This is some super top secret text!"
