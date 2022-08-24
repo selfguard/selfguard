@@ -1,13 +1,5 @@
-let crypto = null;
-
-try {
-	if(window){
-		crypto = window.crypto;
-	}
-}
-catch(err) {
-	crypto = (await import('node:crypto')).webcrypto;
-}
+import {Crypto} from '@peculiar/webcrypto';
+let crypto = new Crypto();
 
 var pbkdf2iterations=10000;
 
