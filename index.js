@@ -25,15 +25,18 @@ export default class SelfGuard {
   async get(key) {
     try {
       let {encryption_key_id, encrypted_text, id} = await retrieveKeyValueData(this.api_domain, this.api_key, key);
-      let value = await this.decrypt(encrypted_text,encryption_key_id);
+      if(encrypted_text){
+        let value = await this.decrypt(encrypted_text,encryption_key_id);
 
-      //rotate encryption key
-      (async ()=>{
-        let encrypted = await this.encrypt(value);
-        let update = await updateKeyValueData(this.api_domain, this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
-      })()
+        //rotate encryption key
+        (async ()=>{
+          let encrypted = await this.encrypt(value);
+          let update = await updateKeyValueData(this.api_domain, this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
+        })()
 
-      return JSON.parse(value);
+        return JSON.parse(value);
+      }
+      else return null;
     }
     catch(err){
       return null;
