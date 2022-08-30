@@ -1,5 +1,6 @@
 import axios from "axios";
 
+//API Key Creation
 export async function createAPIKey(axios,apiDomain){
   try {
     let result = await axios.post(apiDomain + "/createAPIKey");
@@ -20,7 +21,7 @@ export async function retrieveAPIKey(axios,apiDomain){
   }
 }
 
-//Data Key Setters and Getters
+//Encryption Data Key Setters and Getters
 export async function saveEncryptionKey(apiDomain,api_key,key) {
   try {
     let result = await axios.post(apiDomain + "/saveEncryptionKey",{data:{api_key,key}});
@@ -62,6 +63,7 @@ export async function retrieveKeyPair(apiDomain,api_key){
   }
 }
 
+//Tokenization Setters and Getters
 export async function saveTokenizedData(apiDomain, api_key,id, encrypted_text, encryption_key_id){
   try {
     let result = await axios.post(apiDomain + "/saveTokenizedData",{data:{api_key,id,encrypted_text, encryption_key_id}});
@@ -82,7 +84,6 @@ export async function updateTokenizedData(apiDomain, api_key, id, encrypted_text
   }
 }
 
-
 export async function retrieveTokenizedData(apiDomain, api_key, id){
   try {
     let result = await axios.post(apiDomain + "/retrieveTokenizedData",{data:{api_key,id}});
@@ -92,3 +93,35 @@ export async function retrieveTokenizedData(apiDomain, api_key, id){
     console.log({err});
   }
 }
+
+//Tokenization Setters and Getters
+export async function saveKeyValueData(apiDomain, api_key, key, encrypted_text, encryption_key_id){
+  try {
+    let result = await axios.post(apiDomain + "/saveKeyValueData",{data:{api_key, key, encrypted_text, encryption_key_id}});
+    return result.data;
+  }
+  catch(err){
+    console.log({err});
+  }
+}
+
+export async function updateKeyValueData(apiDomain, api_key, id, encrypted_text, encryption_key_id){
+  try {
+    let result = await axios.post(apiDomain + "/updateKeyValueData",{data:{api_key, id, encrypted_text, encryption_key_id}});
+    return result.data;
+  }
+  catch(err){
+    console.log({err});
+  }
+}
+
+export async function retrieveKeyValueData(apiDomain, api_key, key){
+  try {
+    let result = await axios.post(apiDomain + "/retrieveKeyValueData",{data:{api_key, key}});
+    return result.data;
+  }
+  catch(err){
+    console.log({err});
+  }
+}
+

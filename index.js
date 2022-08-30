@@ -1,5 +1,5 @@
 import {encryptText, encryptFile, decryptText, decryptFile} from './encryption.js';
-import {saveEncryptionKey, retrieveEncryptionKey, saveKeyPair, retrieveKeyPair, saveTokenizedData, retrieveTokenizedData, updateTokenizedData} from './fetch.js';
+import {saveEncryptionKey, retrieveEncryptionKey, saveKeyPair, retrieveKeyPair, saveTokenizedData, retrieveTokenizedData, updateTokenizedData, saveKeyValueData, retrieveKeyValueData, updateKeyValueData} from './fetch.js';
 import QuickEncrypt from 'quick-encrypt';
 import ee from 'easy-encryption';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,22 +15,47 @@ export default class SelfGuard {
     this.private_key = private_key; //optional
   }
 
+  //Key-Value Functions
+  async put(key, value) {
+    let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(value));
+    await saveKeyValueData(this.api_domain, this.api_key, key, encrypted_text, encryption_key_id);
+    return true;
+  }
+
+  async get(key) {
+    try {
+      let {encryption_key_id, encrypted_text, id} = await retrieveKeyValueData(this.api_domain, this.api_key, key);
+      let value = await this.decrypt(encrypted_text,encryption_key_id);
+
+      //rotate encryption key
+      (async ()=>{
+        let encrypted = await this.encrypt(value);
+        let update = await updateKeyValueData(this.api_domain, this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
+      })()
+
+      return JSON.parse(value);
+    }
+    catch(err){
+      return null;
+    }
+  }
+
   //Tokenization Functions
   async tokenize(data) {
     let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(data));
     let id = "tok_"+uuidv4();
-    await this.uploadTokenizedData(id,encryption_key_id, encrypted_text);
+    await saveTokenizedData(this.api_domain, this.api_key, id, encrypted_text, encryption_key_id);
     return id;
   }
 
   async detokenize(id) {
-    let {encryption_key_id, encrypted_text} = await this.downloadTokenizedData(id);
+    let {encryption_key_id, encrypted_text} = await retrieveTokenizedData(this.api_domain, this.api_key, id)
     let decrypted_data = await this.decrypt(encrypted_text,encryption_key_id);
 
     //rotate encryption key
     (async ()=>{
       let encrypted = await this.encrypt(decrypted_data);
-      let update = await this.rotateTokenizedData(id,encrypted.encryption_key_id, encrypted.encrypted_text);
+      let update = await updateTokenizedData(this.api_domain,this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
     })()
 
     return JSON.parse(decrypted_data);
@@ -89,22 +114,11 @@ export default class SelfGuard {
     return encryption_key;
   }
 
-  //Download Tokenized Data, Data Keys & Key Pairs
-  async downloadTokenizedData(id){
-    let {encrypted_text,encryption_key_id} = await retrieveTokenizedData(this.api_domain,this.api_key,id);
-    return {encrypted_text,encryption_key_id} ;
-  }
-
-  async rotateTokenizedData(id,encryption_key_id, encrypted_text){
-    let data = await updateTokenizedData(this.api_domain,this.api_key, id, encrypted_text, encryption_key_id);
-    return data;
-  }
+  //Download Data Keys & Key Pairs
 
   async downloadEncryptionKey(id){
     let encryption_key = await retrieveEncryptionKey(this.api_domain,this.api_key,id);
-    if(this.public_key){
-      encryption_key = this.unwrapWithPrivateKey(encryption_key, this.private_key);
-    }
+    if(this.public_key) encryption_key = this.unwrapWithPrivateKey(encryption_key, this.private_key);
     return encryption_key;
   }
 
@@ -114,17 +128,10 @@ export default class SelfGuard {
     return {public_key: data.public_key, private_key};
   }
 
-  //Upload Tokenization Data, Encryption Data Key & Key Pair
-
-  async uploadTokenizedData(id,encryption_key_id, encrypted_text){
-    let data = await saveTokenizedData(this.api_domain,this.api_key,id, encrypted_text, encryption_key_id);
-    return data;
-  }
+  //Upload Encryption Data Key & Key Pair
 
   async uploadEncryptionKey(encryption_key){
-    if(this.public_key) {
-      encryption_key = this.wrapWithPublicKey(encryption_key, this.public_key);
-    }
+    if(this.public_key) encryption_key = this.wrapWithPublicKey(encryption_key, this.public_key);
     let data = await saveEncryptionKey(this.api_domain,this.api_key, encryption_key);
     return data;
   }
