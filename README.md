@@ -45,6 +45,25 @@ let sg = new SelfGuard(API_KEY, PUBLIC_KEY, PRIVATE_KEY);
 
 ```
 
+### Put (Encrypted Key-Value Storage):
+
+```javascript
+
+let success = await sg.put("0xabc-email",'satoshi@bitcoin.xyz');
+
+```
+
+### Get (Encrypted Key-Value Storage):
+
+```javascript
+
+let value = await sg.get('0xabc-email');
+
+console.log(value)
+// "satoshi@bitcoin.xyz"
+
+```
+
 ### Encrypt:
 
 ```javascript
