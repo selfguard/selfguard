@@ -42,7 +42,7 @@ function extractCipherAndSalt(bytes){
 
 
 //Generation
-async function generateKeys(){
+async function generateEncryptionKey(){
 	let key1 = await crypto.subtle.generateKey({name: "AES-CBC",length: 256},true,["encrypt", "decrypt"]);
 	let bytes1 = await crypto.subtle.exportKey('raw',key1);
 	let passphrase = Buffer.from(bytes1).toString('hex')
@@ -76,12 +76,12 @@ async function encryptBytes(plaintextbytes,{ivbytes, key, passphrase, pbkdf2salt
 }
 
 //encrypt file
-export async function encryptFile(objFile) {
+export async function encryptFile(objFile,options) {
 	let plaintext = await readfile(objFile).catch(function(err){});
 	let plaintextbytes = new Uint8Array(plaintext); //raw file
 	let filenamebytes = new TextEncoder('utf-8').encode(objFile.name); //filename
 
-	let keys = await generateKeys();
+	let keys = options && options.encryption_key ?  options.encryption_key : await generateEncryptionKey();
 	let resultbytes = await encryptBytes(plaintextbytes,keys); //encrypt file
 	let resultFilebytes = await encryptBytes(filenamebytes,keys); //encrypt filename
 	let encryptedName = Buffer.from(resultFilebytes).toString('hex');
@@ -90,10 +90,10 @@ export async function encryptFile(objFile) {
   return {blob,passphrase:keys.passphrase,encryptedName};
 }
 
-export async function encryptText(text){
+export async function encryptText(text,options){
 	let plaintextbytes = new TextEncoder('utf-8').encode(text);
 
-	let keys = await generateKeys();
+	let keys = options && options.encryption_key ?  options.encryption_key : await generateEncryptionKey();
 	let resultbytes = await encryptBytes(plaintextbytes,keys);
 
 	let encryptedText = Buffer.from(resultbytes).toString('hex');

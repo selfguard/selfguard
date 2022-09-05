@@ -16,23 +16,23 @@ export default class SelfGuard {
   }
 
   //Key-Value Functions
-  async put(key, value) {
-    let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(value));
+  async put(key, value, options) {
+    let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(value),options);
     await saveKeyValueData(this.api_domain, this.api_key, key, encrypted_text, encryption_key_id);
     return true;
   }
 
-  async get(key) {
+  async get(key,options) {
     try {
       let {encryption_key_id, encrypted_text, id} = await retrieveKeyValueData(this.api_domain, this.api_key, key);
       if(encrypted_text){
-        let value = await this.decrypt(encrypted_text,encryption_key_id);
+        let value = await this.decrypt(encrypted_text,encryption_key_id,options);
 
         //rotate encryption key
-        (async ()=>{
-          let encrypted = await this.encrypt(value);
-          let update = await updateKeyValueData(this.api_domain, this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
-        })()
+        // (async ()=>{
+        //   let encrypted = await this.encrypt(value);
+        //   let update = await updateKeyValueData(this.api_domain, this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
+        // })()
 
         return JSON.parse(value);
       }
@@ -56,37 +56,37 @@ export default class SelfGuard {
     let decrypted_data = await this.decrypt(encrypted_text,encryption_key_id);
 
     //rotate encryption key
-    (async ()=>{
-      let encrypted = await this.encrypt(decrypted_data);
-      let update = await updateTokenizedData(this.api_domain,this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
-    })()
+    // (async ()=>{
+    //   let encrypted = await this.encrypt(decrypted_data);
+    //   let update = await updateTokenizedData(this.api_domain,this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
+    // })()
 
     return JSON.parse(decrypted_data);
   }
 
   //Encrypt Functions
-  async encrypt(text){
-    let {passphrase, encryptedText} = await encryptText(text);
+  async encrypt(text,options){
+    let {passphrase, encryptedText} = await encryptText(text,options);
     let id = await this.uploadEncryptionKey(passphrase);
     return {encryption_key_id:id,encrypted_text:encryptedText};
   }
 
-  async encryptFile(file){
-    let {blob,passphrase,encryptedName} = await encryptFile(file);
+  async encryptFile(file,options){
+    let {blob,passphrase,encryptedName} = await encryptFile(file,options);
     let id = await this.uploadEncryptionKey(passphrase);
     let encryptedFile = new File([blob],encryptedName,{type:file.type});
     return {encrypted_file:encryptedFile, encryption_key_id:id};
   }
 
   //Decrypt Functions
-  async decrypt(text,id){
-    let encryption_key = await this.downloadEncryptionKey(id);
+  async decrypt(text, id, options){
+    let encryption_key = options && options.encryption_key ? options.encryption_key : await this.downloadEncryptionKey(id);
     let decryptedText = await decryptText(text,encryption_key);
     return decryptedText;
   }
 
-  async decryptFile(file,id){
-    let encryption_key = await this.downloadEncryptionKey(id);
+  async decryptFile(file, id, options){
+    let encryption_key = options && options.encryption_key ? options.encryption_key : await this.downloadEncryptionKey(id);
     let decrypted = await decryptFile(file,encryption_key);
     let decryptedName = await decryptText(file.name,encryption_key);
     let decryptedFile = new File([decrypted],decryptedName,{type:file.type});
