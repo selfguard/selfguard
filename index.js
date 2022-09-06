@@ -1,5 +1,5 @@
 import {encryptText, encryptFile, decryptText, decryptFile} from './encryption.js';
-import {saveEncryptionKey, retrieveEncryptionKey, saveKeyPair, retrieveKeyPair, saveTokenizedData, retrieveTokenizedData, updateTokenizedData, saveKeyValueData, retrieveKeyValueData, updateKeyValueData} from './fetch.js';
+import {sendSMSCall, sendEmailCall, saveEncryptionKey, retrieveEncryptionKey, saveKeyPair, retrieveKeyPair, saveTokenizedData, retrieveTokenizedData, updateTokenizedData, saveKeyValueData, retrieveKeyValueData, updateKeyValueData} from './fetch.js';
 import QuickEncrypt from 'quick-encrypt';
 import ee from 'easy-encryption';
 import { v4 as uuidv4 } from 'uuid';
@@ -144,4 +144,15 @@ export default class SelfGuard {
     return data;
   }
 
+  // Send Email To Address
+  async sendEmail({address, from, fromName, replyTo, replyToName, subject, html}){
+    let data = await sendEmailCall({api_domain: this.api_domain, api_key: this.api_key, address, from, fromName, replyTo, replyToName, subject, html});
+    return data;
+  }
+
+  // Send SMS to Phone Number
+  async sendSMS({address, text}){
+    let data = await sendSMSCall({api_domain: this.api_domain, api_key: this.api_key, address, text});
+    return data;
+  }
 }
