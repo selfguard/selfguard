@@ -1,147 +1,205 @@
 import axios from "axios";
 
-//API Key Creation
-export async function createAPIKey(axios,api_domain){
-  try {
-    let result = await axios.post(api_domain + "/createAPIKey");
-    return result.data;
+export default class Fetch {
+
+  constructor(api_domain, api_key) {
+    this.url = api_domain || "https://api.selfguard.xyz";
+    this.api_key = api_key;
   }
-  catch(err){
-    console.log({err});
+
+  // Encryption Keys
+  async saveEncryptionKey({key}) {
+    try {
+      let result = await axios.post(this.url + "/saveEncryptionKey",{data:{key,api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+  async retrieveEncryptionKey({id}) {
+    try {
+      let result = await axios.post(this.url + "/retrieveEncryptionKey",{data:{id,api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+  //Public/Private Key Setters and Getters
+  async saveKeyPair({public_key, encrypted_private_key}){
+    try {
+      let result = await axios.post(this.url + "/saveKeyPair",{data:{public_key, encrypted_private_key, api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+  async retrieveKeyPair(){
+    try {
+      let result = await axios.post(this.url + "/retrieveKeyPair",{data:{api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+  //Tokenization Setters and Getters
+  async saveTokenizedData({id, encrypted_text, encryption_key_id}){
+    try {
+      let result = await axios.post(this.url + "/saveTokenizedData",{data:{id, encrypted_text, encryption_key_id, api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+  async updateTokenizedData({id, encrypted_text, encryption_key_id}){
+    try {
+      let result = await axios.post(this.url + "/updateTokenizedData",{data:{id,encrypted_text, encryption_key_id, api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+  async retrieveTokenizedData({id}){
+    try {
+      let result = await axios.post(this.url + "/retrieveTokenizedData",{data:{id,api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+  //Key Value Setters and Getters
+  async saveKeyValueData({key, encrypted_text, encryption_key_id}){
+    try {
+      let result = await axios.post(this.url + "/saveKeyValueData",{data:{ key, encrypted_text, encryption_key_id,api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+  async updateKeyValueData({id, encrypted_text, encryption_key_id}){
+    try {
+      let result = await axios.post(this.url + "/updateKeyValueData",{data:{ id, encrypted_text, encryption_key_id,api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+  async retrieveKeyValueData({key}){
+    try {
+      let result = await axios.post(this.url + "/retrieveKeyValueData",{data:{ key, api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+
+  //Notifications API
+  async sendSMSCall({address, text}) {
+    try {
+      let result = await axios.post(this.url + "/sendSMS",{data:{ address, text, api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+  async sendEmailCall({address, from, fromName, replyTo, replyToName, subject, html}) {
+    try {
+      let result = await axios.post(this.url + "/sendEmail",{data:{ address, from, fromName, replyTo, replyToName, subject, html, api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+
+  async saveArrayKey({key}) {
+    try {
+      let result = await axios.post(this.url + "/saveArrayKey",{data:{key, api_key:this.api_key }});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+
+  async saveArrayEncryptionKey({key, encryption_key, user_pub_key}) {
+    try {
+      let result = await axios.post(this.url + "/saveArrayEncryptionKey",{data:{key, encryption_key, user_pub_key, api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+
+  async saveArrayValue({encrypted_data, key}) {
+    try {
+      let result = await axios.post(this.url + "/saveArrayValue",{data:{encrypted_data, key, api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+
+  async getArrayValues({gte, limit, key}) {
+    try {
+      let result = await axios.post(this.url + "/getArrayValues",{data:{gte, limit, key, api_key: this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+
+  async getArrayKeys() {
+    try {
+      let result = await axios.post(this.url + "/getArrayKeys",{data:{api_key: this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
+  }
+
+  async getArrayEncryptionKeys({key}) {
+    try {
+      let result = await axios.post(this.url + "/getArrayEncryptionKeys",{data:{key, api_key:this.api_key}});
+      return result.data;
+    }
+    catch(err){
+      console.log({err});
+    }
   }
 }
 
-export async function retrieveAPIKey(axios,api_domain){
-  try {
-    let result = await axios.post(api_domain + "/retrieveAPIKey");
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
 
-//Encryption Data Key Setters and Getters
-export async function saveEncryptionKey(api_domain,api_key,key) {
-  try {
-    let result = await axios.post(api_domain + "/saveEncryptionKey",{data:{api_key,key}});
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
 
-export async function retrieveEncryptionKey(api_domain,api_key,id) {
-  try {
-    let result = await axios.post(api_domain + "/retrieveEncryptionKey",{data:{api_key,id}});
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
 
-//Public/Private Key Setters and Getters
-export async function saveKeyPair(api_domain,api_key, public_key, encrypted_private_key){
-  try {
-    let result = await axios.post(api_domain + "/saveKeyPair",{data:{api_key,public_key, encrypted_private_key}});
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
-
-export async function retrieveKeyPair(api_domain,api_key){
-  try {
-    let result = await axios.post(api_domain + "/retrieveKeyPair",{data:{api_key}});
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
-
-//Tokenization Setters and Getters
-export async function saveTokenizedData(api_domain, api_key,id, encrypted_text, encryption_key_id){
-  try {
-    let result = await axios.post(api_domain + "/saveTokenizedData",{data:{api_key,id,encrypted_text, encryption_key_id}});
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
-
-export async function updateTokenizedData(api_domain, api_key, id, encrypted_text, encryption_key_id){
-  try {
-    let result = await axios.post(api_domain + "/updateTokenizedData",{data:{api_key,id,encrypted_text, encryption_key_id}});
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
-
-export async function retrieveTokenizedData(api_domain, api_key, id){
-  try {
-    let result = await axios.post(api_domain + "/retrieveTokenizedData",{data:{api_key,id}});
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
-
-//Tokenization Setters and Getters
-export async function saveKeyValueData(api_domain, api_key, key, encrypted_text, encryption_key_id){
-  try {
-    let result = await axios.post(api_domain + "/saveKeyValueData",{data:{api_key, key, encrypted_text, encryption_key_id}});
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
-
-export async function updateKeyValueData(api_domain, api_key, id, encrypted_text, encryption_key_id){
-  try {
-    let result = await axios.post(api_domain + "/updateKeyValueData",{data:{api_key, id, encrypted_text, encryption_key_id}});
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
-
-export async function retrieveKeyValueData(api_domain, api_key, key){
-  try {
-    let result = await axios.post(api_domain + "/retrieveKeyValueData",{data:{api_key, key}});
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
-
-export async function sendSMSCall({api_domain, api_key,address, text}) {
-  try {
-    let result = await axios.post(api_domain + "/sendSMS",{data:{api_key, address, text}});
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
-
-export async function sendEmailCall({api_domain, api_key,address, from, fromName, replyTo, replyToName, subject, html}) {
-  try {
-    let result = await axios.post(api_domain + "/sendEmail",{data:{api_key, address, from, fromName, replyTo, replyToName, subject, html}});
-    return result.data;
-  }
-  catch(err){
-    console.log({err});
-  }
-}
 

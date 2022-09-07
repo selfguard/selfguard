@@ -55,7 +55,7 @@ async function generateEncryptionKey(){
 }
 
 //encrypt raw bytes with generated passphrase key
-async function encryptBytes(plaintextbytes,{ivbytes, key, passphrase, pbkdf2salt}){
+async function encryptBytes(plaintextbytes, {ivbytes, key, passphrase, pbkdf2salt}){
 	try {
 		var cipherbytes= await crypto.subtle.encrypt({name: "AES-CBC", iv: ivbytes}, key, plaintextbytes).catch(function(err){});
 
@@ -81,7 +81,7 @@ export async function encryptFile(objFile,options) {
 	let plaintextbytes = new Uint8Array(plaintext); //raw file
 	let filenamebytes = new TextEncoder('utf-8').encode(objFile.name); //filename
 
-	let keys = options && options.encryption_key ?  options.encryption_key : await generateEncryptionKey();
+	let keys = await generateEncryptionKey();
 	let resultbytes = await encryptBytes(plaintextbytes,keys); //encrypt file
 	let resultFilebytes = await encryptBytes(filenamebytes,keys); //encrypt filename
 	let encryptedName = Buffer.from(resultFilebytes).toString('hex');
@@ -93,12 +93,23 @@ export async function encryptFile(objFile,options) {
 export async function encryptText(text,options){
 	let plaintextbytes = new TextEncoder('utf-8').encode(text);
 
+	let keys = await generateEncryptionKey();
+	let resultbytes = await encryptBytes(plaintextbytes,keys);
+
+	let encryptedText = Buffer.from(resultbytes).toString('hex');
+	return {encryptedText,passphrase:keys.passphrase};
+}
+
+export async function encryptWithKey(value,encryption_key){
+	let plaintextbytes = new TextEncoder('utf-8').encode(text);
+
 	let keys = options && options.encryption_key ?  options.encryption_key : await generateEncryptionKey();
 	let resultbytes = await encryptBytes(plaintextbytes,keys);
 
 	let encryptedText = Buffer.from(resultbytes).toString('hex');
 	return {encryptedText,passphrase:keys.passphrase};
 }
+
 
 
 async function decryptBytes(bytes, passphrase){

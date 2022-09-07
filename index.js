@@ -1,8 +1,8 @@
-import {encryptText, encryptFile, decryptText, decryptFile} from './encryption.js';
-import {sendSMSCall, sendEmailCall, saveEncryptionKey, retrieveEncryptionKey, saveKeyPair, retrieveKeyPair, saveTokenizedData, retrieveTokenizedData, updateTokenizedData, saveKeyValueData, retrieveKeyValueData, updateKeyValueData} from './fetch.js';
+import {encryptText, encryptFile, decryptText, decryptFile, encryptWithKey} from './encryption.js';
 import QuickEncrypt from 'quick-encrypt';
 import ee from 'easy-encryption';
 import { v4 as uuidv4 } from 'uuid';
+import Fetch from './fetch.js';
 
 //sanitize all functions and do exception checking
 export default class SelfGuard {
@@ -10,57 +10,111 @@ export default class SelfGuard {
   constructor(api_key, public_key, private_key, api_domain) {
     this.api_domain = api_domain || "https://api.selfguard.xyz";
     this.api_key = api_key;
-
-    this.public_key = public_key; //optional
+    this.pub_key = public_key; //optional
     this.private_key = private_key; //optional
+    this.fetch = new Fetch(this.api_domain, this.api_key);
+  }
+
+  //Array Functions
+  async createArray(key){
+    let data = await this.fetch.saveArrayKey({key})
+    let encryption_key = uuidv4();
+    if(this.pub_key) encryption_key = QuickEncrypt.encrypt(encryption_key, this.pub_key);
+    await this.fetch.saveArrayEncryptionKey({key,user_pub_key:this.pub_key,encryption_key});
+    return data;
+  }
+
+  //add encryption_key to array
+  async addUserToArray(key, user_pub_key, options){
+    let keys = await this.fetch.getArrayEncryptionKeys({key});
+    let encryption_object = keys.filter((key)=>{
+      if(key.user_pub_key === this.pub_key) return true;
+      else return false;
+    })[0];
+    if(encryption_object){
+      let encryption_key = encryption_object.encryption_key;
+      if(encryption_object.user_pub_key && encryption_object.user_pub_key === this.pub_key) encryption_key = QuickEncrypt.decrypt(encryption_key, this.private_key);
+      encryption_key = QuickEncrypt.encrypt(encryption_key, user_pub_key);
+      await this.fetch.saveArrayEncryptionKey({key,user_pub_key,encryption_key});
+    }
+  }
+
+  //Array Key-Value Functions
+  async addToArray(key, value, options) {
+    //get encryption key
+    let keys = await this.fetch.getArrayEncryptionKeys({key});
+
+    let encryption_object = keys.filter((key)=>{
+      if(key.user_pub_key === this.pub_key) return true;
+      else if(!key.user_pub_key) return true;
+      else return false;
+    })[0];
+
+    let encryption_key = encryption_object.encryption_key;
+    if(encryption_object.user_pub_key && encryption_object.user_pub_key === this.pub_key) encryption_key = QuickEncrypt.decrypt(encryption_key, this.private_key);
+
+    //encrypt the data
+    let encrypted_data = ee.encrypt(encryption_key,JSON.stringify(value));
+
+    //save the value
+    let data = await this.fetch.saveArrayValue({key,encrypted_data});
+    return
+  }
+
+  async getArray(key, gte, limit){
+    let data = await this.fetch.getArrayValues({key, limit, gte});
+    //get encryption_key
+    let encryption_object = data[0].array_encryption_keys.filter((key)=>{
+      if(key.user_pub_key === this.pub_key) return true;
+      else if(!key.user_pub_key) return true;
+      else return false;
+    })[0];
+    let encryption_key = encryption_object.encryption_key;
+    if(encryption_object.user_pub_key && encryption_object.user_pub_key === this.pub_key) encryption_key = QuickEncrypt.decrypt(encryption_key, this.private_key);
+
+    if(encryption_object.user_pub_key && encryption_object.user_pub_key === this.pub_key) encryption_key = QuickEncrypt.decrypt(encryption_key, this.private_key);
+
+    //decrypt each value in the array
+    let arr = data[0].array_values.map((a)=>{
+      let data = ee.decrypt(encryption_key, a.encrypted_data);
+      return JSON.parse(data);
+    })
+
+    return arr;
+  }
+
+  async getArrays() {
+    let data = await this.fetch.getArrayKeys();
+    return data;
   }
 
   //Key-Value Functions
   async put(key, value, options) {
     let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(value),options);
-    await saveKeyValueData(this.api_domain, this.api_key, key, encrypted_text, encryption_key_id);
+    await this.fetch.saveKeyValueData({key, encrypted_text, encryption_key_id});
     return true;
   }
 
-  async get(key,options) {
-    try {
-      let {encryption_key_id, encrypted_text, id} = await retrieveKeyValueData(this.api_domain, this.api_key, key);
-      if(encrypted_text){
-        let value = await this.decrypt(encrypted_text,encryption_key_id,options);
-
-        //rotate encryption key
-        // (async ()=>{
-        //   let encrypted = await this.encrypt(value);
-        //   let update = await updateKeyValueData(this.api_domain, this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
-        // })()
-
-        return JSON.parse(value);
-      }
-      else return null;
+  async get(key, options) {
+    let {encryption_key_id, encrypted_text, id} = await this.fetch.retrieveKeyValueData({key});
+    if(encrypted_text){
+      let value = await this.decrypt(encrypted_text,encryption_key_id,options);
+      return JSON.parse(value);
     }
-    catch(err){
-      return null;
-    }
+    else return null;
   }
 
   //Tokenization Functions
   async tokenize(data) {
     let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(data));
     let id = "tok_"+uuidv4();
-    await saveTokenizedData(this.api_domain, this.api_key, id, encrypted_text, encryption_key_id);
+    await this.fetch.saveTokenizedData({id, encrypted_text, encryption_key_id});
     return id;
   }
 
   async detokenize(id) {
-    let {encryption_key_id, encrypted_text} = await retrieveTokenizedData(this.api_domain, this.api_key, id)
+    let {encryption_key_id, encrypted_text} = await this.fetch.retrieveTokenizedData({id})
     let decrypted_data = await this.decrypt(encrypted_text,encryption_key_id);
-
-    //rotate encryption key
-    // (async ()=>{
-    //   let encrypted = await this.encrypt(decrypted_data);
-    //   let update = await updateTokenizedData(this.api_domain,this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
-    // })()
-
     return JSON.parse(decrypted_data);
   }
 
@@ -95,10 +149,8 @@ export default class SelfGuard {
 
   //Public/Private Key Generation
   generatePublicPrivateKeyPair(password){
-
     let keys = QuickEncrypt.generate(1024);
     let encrypted_private_key = ee.encrypt(password,keys.private);
-
     return {
       public_key:keys.public,
       encrypted_private_key,
@@ -106,27 +158,15 @@ export default class SelfGuard {
     };
   }
 
-  //Wrapper Functions for Data Keys
-  wrapWithPublicKey(encryption_key){
-    let encrypted_encryption_key = QuickEncrypt.encrypt(encryption_key, this.public_key)
-    return encrypted_encryption_key;
-  }
-
-  unwrapWithPrivateKey(encrypted_encryption_key){
-    let encryption_key = QuickEncrypt.decrypt(encrypted_encryption_key, this.private_key)
-    return encryption_key;
-  }
-
   //Download Data Keys & Key Pairs
-
   async downloadEncryptionKey(id){
-    let encryption_key = await retrieveEncryptionKey(this.api_domain,this.api_key,id);
-    if(this.public_key) encryption_key = this.unwrapWithPrivateKey(encryption_key, this.private_key);
+    let encryption_key = await this.fetch.retrieveEncryptionKey({id});
+    if(this.pub_key) encryption_key = QuickEncrypt.decrypt(encryption_key, this.private_key) // unwrap with private key
     return encryption_key;
   }
 
   async downloadKeyPair(password){
-    let data = await retrieveKeyPair(this.api_domain,this.api_key);
+    let data = await this.fetch.retrieveKeyPair();
     let private_key = ee.decrypt(password, data.encrypted_private_key);
     return {public_key: data.public_key, private_key};
   }
@@ -134,25 +174,37 @@ export default class SelfGuard {
   //Upload Encryption Data Key & Key Pair
 
   async uploadEncryptionKey(encryption_key){
-    if(this.public_key) encryption_key = this.wrapWithPublicKey(encryption_key, this.public_key);
-    let data = await saveEncryptionKey(this.api_domain,this.api_key, encryption_key);
+    if(this.pub_key) encryption_key = QuickEncrypt.encrypt(encryption_key, this.pub_key) // wrap with public key
+    let data = await this.fetch.saveEncryptionKey({encryption_key});
     return data;
   }
 
   async uploadKeyPair(public_key, encrypted_private_key){
-    let data = await saveKeyPair(this.api_domain,this.api_key, public_key, encrypted_private_key);
+    let data = await this.fetch.saveKeyPair({public_key, encrypted_private_key});
     return data;
   }
 
   // Send Email To Address
   async sendEmail({address, from, fromName, replyTo, replyToName, subject, html}){
-    let data = await sendEmailCall({api_domain: this.api_domain, api_key: this.api_key, address, from, fromName, replyTo, replyToName, subject, html});
+    let data = await this.fetch.sendEmailCall({address, from, fromName, replyTo, replyToName, subject, html});
     return data;
   }
 
   // Send SMS to Phone Number
   async sendSMS({address, text}){
-    let data = await sendSMSCall({api_domain: this.api_domain, api_key: this.api_key, address, text});
+    let data = await this.fetch.sendSMSCall({address, text});
     return data;
   }
 }
+
+//rotate encryption key
+// (async ()=>{
+//   let encrypted = await this.encrypt(value);
+//   let update = await updateKeyValueData(this.api_domain, this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
+// })()
+
+//rotate encryption key
+// (async ()=>{
+//   let encrypted = await this.encrypt(decrypted_data);
+//   let update = await updateTokenizedData(this.api_domain,this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
+// })()
