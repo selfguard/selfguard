@@ -1,13 +1,10 @@
-
-
-
-<p align="center">
+<div align="center">
   <img src="https://bafybeigfziugbx7542fy63mjyyeqtbbdpkbwj6mqu6gelkovgryvhbrglm.ipfs.w3s.link/selfguard.png">
   <h1 align="center"> SelfGuard</h1>
   <h3 align="center">Universal API For Encryption</h3>
   <p align='center'> SelfGuard allows you to easily encrypt and tokenize data  in a secure and compliant manner. </p>
   <p align='center'> <b>Get your API-Key</b> at <a href='https://selfguard.xyz'> https://selfguard.xyz </a>
-</p>
+</div>
 
 ## Description
 
@@ -49,7 +46,7 @@ let sg = new SelfGuard(API_KEY, PUBLIC_KEY, PRIVATE_KEY);
 ## Key Pair
 Used for creating RSA or ECDSA (web3 compatible) public/private key pairs that can be used for asymmetric encryption.
 
-## Generate Public Private Key Pair
+### Generate Public Private Key Pair
 ```javascript
 
 let key_pair = sg.generatePublicPrivateKeyPair('rsa','passwordToEncryptPrivateKey');
@@ -135,7 +132,7 @@ console.log(value)
 ## Encrypted Array Storage
 Used as an encrypted database to store key -> multiple values. Value data is fully encrypted by an encryption key set up at the initiation of the array. Value data can only be decrypted by users who have been assigned access to the encryption key via asymmetric encryption.
 
-### createArray
+### Create Array
 
 ```javascript
 
@@ -143,7 +140,7 @@ await sg.createArray('key');
 
 ```
 
-### addToArray
+### Add To Array
 ```javascript
 
 await sg.addToArray('key','value');
@@ -151,7 +148,7 @@ await sg.addToArray('key','value2');
 
 ```
 
-### addUserToArray
+### Add User To Array
 ```javascript
 
 await sg.addUserToArray('key','0xabc...');
@@ -159,7 +156,7 @@ await sg.addUserToArray('key','0xabc...');
 ```
 
 
-### getArray
+### Get Array
 ```javascript
 
 let data = await sg.getArray('key');
@@ -168,7 +165,7 @@ console.log(data)
 
 ```
 
-### getArrayKeys
+### Get Array Keys
 ```javascript
 
 let keys = await sg.createArray('room1');

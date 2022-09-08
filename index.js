@@ -64,12 +64,14 @@ export default class SelfGuard {
 
   async getArray(key, gte, limit){
     let data = await this.fetch.getArrayValues({key, limit, gte});
+    let encryption_keys = await this.fetch.getArrayEncryptionKeys({key});
     //get encryption_key
-    let encryption_object = data[0].array_encryption_keys.filter((key)=>{
+    let encryption_object = encryption_keys.filter((key)=>{
       if(key.user_pub_key === this.pub_key) return true;
       else if(!key.user_pub_key) return true;
       else return false;
     })[0];
+
     let encryption_key = encryption_object.encryption_key;
     if(encryption_object.user_pub_key && encryption_object.user_pub_key === this.pub_key) encryption_key = QuickEncrypt.decrypt(encryption_key, this.private_key);
 
@@ -79,7 +81,7 @@ export default class SelfGuard {
     let arr = data[0].array_values.map((a)=>{
       let data = ee.decrypt(encryption_key, a.encrypted_data);
       return JSON.parse(data);
-    })
+    });
 
     return arr;
   }
