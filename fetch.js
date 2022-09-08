@@ -61,6 +61,10 @@ export default class Fetch {
     return result.data;
   }
 
+  async retrieveAllKeys(){
+    let result = await axios.post(this.url + "/retrieveAllKeys",{data:{ api_key:this.api_key}});
+    return result.data;
+  }
 
   //Notifications API
   async sendSMSCall({address, text}) {

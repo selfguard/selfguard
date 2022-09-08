@@ -111,6 +111,11 @@ export default class SelfGuard {
     return JSON.parse(value);
   }
 
+  async getAllKeys(options) {
+    let data = await this.fetch.retrieveAllKeys();
+    return data;
+  }
+
   //Tokenization Functions
   async tokenize(data) {
     let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(data));
