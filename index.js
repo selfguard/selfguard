@@ -3,6 +3,7 @@ import QuickEncrypt from 'quick-encrypt';
 import ee from 'easy-encryption';
 import { v4 as uuidv4 } from 'uuid';
 import Fetch from './fetch.js';
+import { ethers } from "ethers";
 
 //sanitize all functions and do exception checking
 export default class SelfGuard {
@@ -157,6 +158,16 @@ export default class SelfGuard {
         encrypted_private_key,
         private_key:keys.private
       };
+    }
+    else if(type == 'ecdsa'){
+      let wallet = ethers.Wallet.createRandom();
+      let encrypted_private_key = ee.encrypt(password,wallet.privateKey);
+
+      return {
+        public_key: wallet.publicKey,
+        encrypted_private_key,
+        private_key: wallet.privateKey
+      }
     }
   }
 
