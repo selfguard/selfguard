@@ -1,4 +1,5 @@
 
+
 <p align="center">
   <img src="https://bafybeigfziugbx7542fy63mjyyeqtbbdpkbwj6mqu6gelkovgryvhbrglm.ipfs.w3s.link/selfguard.png">
   <h1 align="center"> SelfGuard</h1>
@@ -70,28 +71,6 @@ console.log(decryptedText)
 // "This is some super top secret text!"
 
 ```
-
-## Encrypted Key/Value Storage
-Used as an encrypted database to store and key/value data. Value data is fully encrypted and can only be decrypted only by those who have permissions set by the API Key holder.
-
-### Put:
-```javascript
-
-let success = await sg.put('key','value');
-
-```
-
-### Get:
-
-```javascript
-
-let value = await sg.get('key');
-
-console.log(value)
-// "value"
-
-```
-
 ## Data Tokenization
 Used as an encrypted storage to encrypt data without having to manage the encrypted data yourself.
 
@@ -115,6 +94,77 @@ console.log(data)
 // "This is some super top secret text!"
 
 ```
+
+## Encrypted Key/Value Storage
+Used as an encrypted database to store and key - > value data. Value data is fully encrypted and can only be decrypted only by those who have permissions set by the API Key holder.
+
+### Put:
+```javascript
+
+let success = await sg.put('key','value');
+
+```
+
+### Get:
+
+```javascript
+
+let value = await sg.get('key');
+
+console.log(value)
+// "value"
+
+```
+## Encrypted Array Storage
+Used as an encrypted database to store key -> multiple values. Value data is fully encrypted by an encryption key set up at the initiation of the array. Value data can only be decrypted by users who have been assigned access to the encryption key via asymmetric encryption.
+
+### createArray
+
+```javascript
+
+await sg.createArray('key');
+
+```
+
+### addToArray
+```javascript
+
+await sg.addToArray('key','value');
+await sg.addToArray('key','value2');
+
+```
+
+### addUserToArray
+```javascript
+
+await sg.addUserToArray('key','0xabc...');
+
+```
+
+
+### getArray
+```javascript
+
+let data = await sg.getArray('key');
+console.log(data)
+// ['value','value2']
+
+```
+
+### getArrayKeys
+```javascript
+
+let keys = await sg.createArray('room1');
+/*
+[{
+	key: 'key',
+	length: 2,
+	created_at: '2022-09-07T19:58:35.616997+00:00'
+}]
+*/
+
+```
+
 
 ## Notifications
 Used to send texts or emails to addresses who's email and phone number are stored using the encrypted key/value storage. Keys should be stored as

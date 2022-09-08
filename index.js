@@ -83,7 +83,7 @@ export default class SelfGuard {
     return arr;
   }
 
-  async getArrays() {
+  async getArrayKeys() {
     let data = await this.fetch.getArrayKeys();
     return data;
   }
