@@ -94,7 +94,7 @@ export default class SelfGuard {
   //Key-Value Functions
   async put(key, value, options) {
     try {
-      let value = await this.get(key);
+      let value2 = await this.get(key);
       let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(value),options);
       await this.fetch.updateKeyValueData({key, encrypted_text, encryption_key_id});
     }
