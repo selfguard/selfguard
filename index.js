@@ -148,14 +148,16 @@ export default class SelfGuard {
   }
 
   //Public/Private Key Generation
-  generatePublicPrivateKeyPair(password){
-    let keys = QuickEncrypt.generate(1024);
-    let encrypted_private_key = ee.encrypt(password,keys.private);
-    return {
-      public_key:keys.public,
-      encrypted_private_key,
-      private_key:keys.private
-    };
+  generatePublicPrivateKeyPair(type,password){
+    if(type === 'rsa'){
+      let keys = QuickEncrypt.generate(1024);
+      let encrypted_private_key = ee.encrypt(password,keys.private);
+      return {
+        public_key:keys.public,
+        encrypted_private_key,
+        private_key:keys.private
+      };
+    }
   }
 
   //Download Data Keys & Key Pairs

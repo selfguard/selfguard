@@ -1,5 +1,6 @@
 
 
+
 <p align="center">
   <img src="https://bafybeigfziugbx7542fy63mjyyeqtbbdpkbwj6mqu6gelkovgryvhbrglm.ipfs.w3s.link/selfguard.png">
   <h1 align="center"> SelfGuard</h1>
@@ -45,7 +46,23 @@ let sg = new SelfGuard(API_KEY, PUBLIC_KEY, PRIVATE_KEY);
 //When encryption keys are recieved from SelfGuard they are decrypted using the PRIVATE_KEY.
 
 ```
+## Key Pair
+Used for creating RSA or ECDSA (web3 compatible) public/private key pairs that can be used for asymmetric encryption.
 
+## Generate Public Private Key Pair
+```javascript
+
+let key_pair = sg.generatePublicPrivateKeyPair('rsa','passwordToEncryptPrivateKey');
+console.log(key_pair);
+/*
+{
+  public_key: '-----BEGIN RSA PUBLIC KEY-----\n....',
+  encrypted_private_key: '7d39f896d088e5890bb6cc4cf....',
+  private_key: '-----BEGIN RSA PRIVATE KEY-----\n...'
+}
+*/
+
+```
 
 ## Raw Encryption
 Used for encrypting and storing any piece of data that can later be decrypted only by those who have permissions set by the API Key holder.
