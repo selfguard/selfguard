@@ -8,9 +8,9 @@ export default class Fetch {
   }
 
   // Encryption Keys
-  async saveEncryptionKey({key}) {
+  async saveEncryptionKey({encryption_key}) {
     try {
-      let result = await axios.post(this.url + "/saveEncryptionKey",{data:{key,api_key:this.api_key}});
+      let result = await axios.post(this.url + "/saveEncryptionKey",{data:{key:encryption_key,api_key:this.api_key}});
       return result.data;
     }
     catch(err){
