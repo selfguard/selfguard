@@ -93,18 +93,22 @@ export default class SelfGuard {
 
   //Key-Value Functions
   async put(key, value, options) {
-    let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(value),options);
-    await this.fetch.saveKeyValueData({key, encrypted_text, encryption_key_id});
+    try {
+      let value = await this.get(key);
+      let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(value),options);
+      await this.fetch.updateKeyValueData({key, encrypted_text, encryption_key_id});
+    }
+    catch(err){
+      let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(value),options);
+      await this.fetch.saveKeyValueData({key, encrypted_text, encryption_key_id});
+    }
     return true;
   }
 
   async get(key, options) {
     let {encryption_key_id, encrypted_text, id} = await this.fetch.retrieveKeyValueData({key});
-    if(encrypted_text){
-      let value = await this.decrypt(encrypted_text,encryption_key_id,options);
-      return JSON.parse(value);
-    }
-    else return null;
+    let value = await this.decrypt(encrypted_text,encryption_key_id,options);
+    return JSON.parse(value);
   }
 
   //Tokenization Functions

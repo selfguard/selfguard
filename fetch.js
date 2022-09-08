@@ -91,9 +91,9 @@ export default class Fetch {
     }
   }
 
-  async updateKeyValueData({id, encrypted_text, encryption_key_id}){
+  async updateKeyValueData({key, encrypted_text, encryption_key_id}){
     try {
-      let result = await axios.post(this.url + "/updateKeyValueData",{data:{ id, encrypted_text, encryption_key_id,api_key:this.api_key}});
+      let result = await axios.post(this.url + "/updateKeyValueData",{data:{ key, encrypted_text, encryption_key_id, api_key:this.api_key}});
       return result.data;
     }
     catch(err){
