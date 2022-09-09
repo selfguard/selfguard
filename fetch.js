@@ -111,6 +111,11 @@ export default class Fetch {
     let result = await axios.post(this.url + "/getArrayEncryptionKeys",{data:{key, api_key:this.api_key}});
     return result.data;
   }
+
+  async retrieveEvents(){
+    let result = await axios.post(this.url + "/retrieveEvents",{data:{api_key:this.api_key}});
+    return result.data;
+  }
 }
 
 

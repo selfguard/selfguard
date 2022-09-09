@@ -219,6 +219,11 @@ export default class SelfGuard {
     let data = await this.fetch.sendSMSCall({address, text});
     return data;
   }
+
+  async retrieveEvents(){
+    let data = await this.fetch.retrieveEvents();
+    return data;
+  }
 }
 
 //rotate encryption key

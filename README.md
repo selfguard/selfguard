@@ -1,7 +1,7 @@
-<div align="center">
-  <img src="https://bafybeigfziugbx7542fy63mjyyeqtbbdpkbwj6mqu6gelkovgryvhbrglm.ipfs.w3s.link/selfguard.png">
-  <h1 align="center"> SelfGuard</h1>
-  <h3 align="center">Universal API For Encryption</h3>
+<div align='center'>
+  <img src='https://bafybeigfziugbx7542fy63mjyyeqtbbdpkbwj6mqu6gelkovgryvhbrglm.ipfs.w3s.link/selfguard.png'>
+  <h1 align='center'> SelfGuard</h1>
+  <h3 align='center'>Universal API For Encryption</h3>
   <p align='center'> SelfGuard allows you to easily encrypt and tokenize data  in a secure and compliant manner. </p>
   <p align='center'> <b>Get your API-Key</b> at <a href='https://selfguard.xyz'> https://selfguard.xyz </a>
 </div>
@@ -71,7 +71,7 @@ Used for encrypting and storing any piece of data that can later be decrypted on
 let {encrypted_text, encryption_key_id} = await sg.encrypt( 'This is some super top secret text!')
 
 console.log({encrypted_text,encryption_key_id})
-// {encrypted_text: "5ac4asffda...... ", encryption_key_id:"e791a8a..."}
+// {encrypted_text: '5ac4asffda...... ', encryption_key_id:'e791a8a...'}
 
 ```
 
@@ -79,10 +79,10 @@ console.log({encrypted_text,encryption_key_id})
 
 ```javascript
 
-let {encrypted_text, encryption_key_id} = await sg.decrypt(encrypted_text, encryption_key_id)
+let decryptedText = await sg.decrypt(encrypted_text, encryption_key_id)
 
 console.log(decryptedText)
-// "This is some super top secret text!"
+// 'This is some super top secret text!'
 
 ```
 ## Data Tokenization
@@ -105,7 +105,7 @@ console.log(token_id)
 let data = await sg.detokenize(token_id)
 
 console.log(data)
-// "This is some super top secret text!"
+// 'This is some super top secret text!'
 
 ```
 
@@ -126,7 +126,7 @@ let success = await sg.put('key','value');
 let value = await sg.get('key');
 
 console.log(value)
-// "value"
+// 'value'
 
 ```
 ## Encrypted Array Storage
@@ -168,7 +168,8 @@ console.log(data)
 ### Get Array Keys
 ```javascript
 
-let keys = await sg.createArray('room1');
+let keys = await sg.getArrayKeys();
+console.log(keys);
 /*
 [{
 	key: 'key',
@@ -183,11 +184,7 @@ let keys = await sg.createArray('room1');
 ## Notifications
 Used to send texts or emails to addresses who's email and phone number are stored using the encrypted key/value storage. Keys should be stored as
 ```javascript
-"0x5F9f570eD75b3D8798D6b1309825d26f9B9038D1-email"
-```
-and
-```javascript
-"0x5F9f570eD75b3D8798D6b1309825d26f9B9038D1-phone"
+'0x5F9f570eD75b3D8798D6b1309825d26f9B9038D1-profile'
 ```
 when storing the email and phone number for 0x5F9f570eD75b3D8798D6b1309825d26f9B9038D1.
 
@@ -201,6 +198,6 @@ await sg.sendSMS({address:'0xadfb..',text:'Example Text'});
 ### Send Email
 ```javascript
 
-await sg.sendEmail({address:'0xadfb..',from:'example@test.com',fromName:'test',replyTo:'reply@test.com', reployToName:'test',subject:"Test Subject", html:"This is the content of the email"});
+await sg.sendEmail({address:'0xadfb..',from:'example@test.com',fromName:'test',replyTo:'reply@test.com', reployToName:'test',subject:'Test Subject', html:'This is the content of the email'});
 
 ```
