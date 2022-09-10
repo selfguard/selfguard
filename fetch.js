@@ -24,8 +24,8 @@ export default class Fetch {
     return result.data;
   }
 
-  async retrieveKeyPair(){
-    let result = await axios.post(this.url + "/retrieveKeyPair",{data:{api_key:this.api_key}});
+  async retrieveKeyPairs(){
+    let result = await axios.post(this.url + "/retrieveKeyPairs",{data:{api_key:this.api_key}});
     return result.data;
   }
 
