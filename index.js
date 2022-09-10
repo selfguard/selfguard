@@ -146,7 +146,7 @@ export default class SelfGuard {
 
   //Decrypt Functions
   async decrypt(text, id, options){
-    if(options.password){
+    if(options && options.password){
       return ee.decrypt(options.password, text);
     }
     let encryption_key = options && options.encryption_key ? options.encryption_key : await this.downloadEncryptionKey(id);
