@@ -61,8 +61,8 @@ export default class Fetch {
     return result.data;
   }
 
-  async retrieveAllKeys(){
-    let result = await axios.post(this.url + "/retrieveAllKeys",{data:{ api_key:this.api_key}});
+  async retrieveAllKeys({gte, limit}){
+    let result = await axios.post(this.url + "/retrieveAllKeys",{data:{ api_key:this.api_key, gte, limit}});
     return result.data;
   }
 
