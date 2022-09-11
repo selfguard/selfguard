@@ -1,3 +1,4 @@
+
 <div align='center'>
   <img src='https://bafybeigfziugbx7542fy63mjyyeqtbbdpkbwj6mqu6gelkovgryvhbrglm.ipfs.w3s.link/selfguard.png'>
   <h1 align='center'> SelfGuard</h1>
@@ -44,28 +45,43 @@ let sg = new SelfGuard(API_KEY, PUBLIC_KEY, PRIVATE_KEY);
 
 ```
 ## Key Pair
-Used for creating RSA or ECDSA (web3 compatible) public/private key pairs that can be used for asymmetric encryption.
 
 ### Generate Public Private Key Pair
+Allows you to create an RSA or ECSDA key pair.
 ```javascript
 
-let key_pair = sg.generatePublicPrivateKeyPair('rsa','passwordToEncryptPrivateKey');
+let key_pair = sg.generatePublicPrivateKeyPair('rsa' || 'ecdsa');
 console.log(key_pair);
 /*
 {
   public_key: '-----BEGIN RSA PUBLIC KEY-----\n....',
-  encrypted_private_key: '7d39f896d088e5890bb6cc4cf....',
   private_key: '-----BEGIN RSA PRIVATE KEY-----\n...'
 }
 */
 
 ```
 
-## Raw Encryption
-Used for encrypting and storing any piece of data that can later be decrypted only by those who have permissions set by the API Key holder.
+### Upload Key Pair
+Allows you to save this key pair with SelfGuard, encrypted with a password
+```javascript
+
+await sg.uploadKeyPair(key_pair,'password');
+
+```
+
+### Get Key Pairs
+Allows you to retrieve all encrypted key pairs stored with this account
+
+```javascript
+
+await sg.getKeyPairs();
+
+```
+
+## Encryption
 
 ### Encrypt:
-
+Allows you to encrypt any piece of data and receive the respective encryption key id (the encryption key is stored with SelfGuard) and the encrypted text.
 ```javascript
 
 let {encrypted_text, encryption_key_id} = await sg.encrypt( 'This is some super top secret text!')
@@ -76,7 +92,7 @@ console.log({encrypted_text,encryption_key_id})
 ```
 
 ### Decrypt:
-
+Allows you to decrypt previously encrypted data by providing the encrypted text and the encryption key id respective to the encrypted data.
 ```javascript
 
 let decryptedText = await sg.decrypt(encrypted_text, encryption_key_id)
@@ -85,34 +101,53 @@ console.log(decryptedText)
 // 'This is some super top secret text!'
 
 ```
+
+### Encrypt With Password
+Allows you to encrypt any piece of data with a password.
+```javascript
+
+let ciphertext = sg.encryptWithPassword( 'This is some super top secret text!','password')
+
+```
+
+### Decrypt With Password:
+Allows you to decrypt encrypted data with the respective password.
+```javascript
+
+let decryptedText = sg.decryptWithPassword(ciphertext, 'password')
+
+console.log(decryptedText)
+// 'This is some super top secret text!'
+
+```
+
+
 ## Data Tokenization
-Used as an encrypted storage to encrypt data without having to manage the encrypted data yourself.
 
 ### Tokenize:
+Allows you to encrypt data and store the encrypted data with SelfGuard itself.
 ```javascript
 
 let token_id = await sg.tokenize( 'This is some super top secret text!')
-
 console.log(token_id)
 // tok_14A...
 
 ```
 
 ### Detokenize:
-
+Allows you to retrieve the previously tokenized data by providing the respective token id.
 ```javascript
 
 let data = await sg.detokenize(token_id)
-
 console.log(data)
 // 'This is some super top secret text!'
 
 ```
 
 ## Encrypted Key/Value Storage
-Used as an encrypted database to store and key - > value data. Value data is fully encrypted and can only be decrypted only by those who have permissions set by the API Key holder.
 
 ### Put:
+Allows you to store any key value data where the value is encrypted.
 ```javascript
 
 let success = await sg.put('key','value');
@@ -120,7 +155,7 @@ let success = await sg.put('key','value');
 ```
 
 ### Get:
-
+Allows you to retrieve key value data where the value is decrypted upon retrieval
 ```javascript
 
 let value = await sg.get('key');
@@ -129,6 +164,16 @@ console.log(value)
 // 'value'
 
 ```
+
+### Get  Keys
+Allows you to get all the keys (amongst all the key-value objects) stored with this account
+```javascript
+
+await sg.getKeys();
+
+```
+
+
 ## Encrypted Array Storage
 Used as an encrypted database to store key -> multiple values. Value data is fully encrypted by an encryption key set up at the initiation of the array. Value data can only be decrypted by users who have been assigned access to the encryption key via asymmetric encryption.
 
