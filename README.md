@@ -50,7 +50,7 @@ let sg = new SelfGuard(API_KEY, PUBLIC_KEY, PRIVATE_KEY);
 Allows you to create an RSA or ECSDA key pair.
 ```javascript
 
-let key_pair = sg.generatePublicPrivateKeyPair('rsa' || 'ecdsa');
+let key_pair = sg.createKeyPair('rsa' || 'ecdsa');
 console.log(key_pair);
 /*
 {
