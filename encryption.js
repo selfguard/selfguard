@@ -18,27 +18,17 @@ function readfile(file){
 }
 
 /**
- * It takes a salt, a passphrase key, and a type of key to import, and returns an AES key, an IV, and
- * the PBKDF2 bytes.
- * @param passphrase - The passphrase that the user entered.
- * @returns The key, ivbytes, and pbkdf2bytes are being returned.
- */
-async function extractPassphraseKey(passphrase){
-	var passphrasebytes = new TextEncoder("utf-8").encode(passphrase);
-	var passphrasekey = await crypto.subtle.importKey('raw', passphrasebytes, {name: 'PBKDF2'}, false, ['deriveBits']).catch(function(err){});
-	return passphrasekey
-}
-
-/**
- * It takes a salt, a passphrase key, and a type of key to import, and returns an AES key, an IV, and
+ * It takes a salt, a passphrase, and a type of key to import, and returns an AES key, an IV, and
  * the PBKDF2 bytes
  * @param pbkdf2salt - A random salt used to derive the key.
- * @param passphrasekey - The key derived from the passphrase.
+ * @param passphrase - The passphrase that will be used to derive the key.
  * @param type - 'encrypt' or 'decrypt'
  * @returns The key, ivbytes, and pbkdf2bytes are being returned.
  */
-async function extractKeyBytes(pbkdf2salt, passphrasekey, type){
+async function extractKeyBytes(pbkdf2salt, passphrase, type){
 	try {
+		var passphrasebytes = new TextEncoder("utf-8").encode(passphrase);
+		var passphrasekey = await crypto.subtle.importKey('raw', passphrasebytes, {name: 'PBKDF2'}, false, ['deriveBits']).catch(function(err){});
 		var pbkdf2bytes = await crypto.subtle.deriveBits({"name": 'PBKDF2', "salt": pbkdf2salt, "iterations": pbkdf2iterations, "hash": 'SHA-256'}, passphrasekey, 384).catch(function(err){});
 		pbkdf2bytes = new Uint8Array(pbkdf2bytes);
 		let keybytes=pbkdf2bytes.slice(0,32);
@@ -51,22 +41,14 @@ async function extractKeyBytes(pbkdf2salt, passphrasekey, type){
 	}
 }
 
-/**
- * It takes a byte array and returns an object with two properties: `pbkdf2salt` and `cipherbytes`
- * @param bytes - the bytes of the encrypted file
- * @returns An object with two properties: pbkdf2salt and cipherbytes.
- */
-function extractCipherAndSalt(bytes){
-	var pbkdf2salt = bytes.slice(8,16);
-	let cipherbytes = bytes.slice(16);
-	return {pbkdf2salt, cipherbytes}
-}
-
 
 /**
- * It generates a random 256 bit AES key, then uses that key to encrypt a random 8 byte salt, and then
- * uses that salt to encrypt the 256 bit AES key
- * @returns An object with the ivbytes, key, passphrase, and pbkdf2salt.
+ * It generates a random 256 bit key and the corresponding iv bytes and salt
+ * @returns An object with the following properties:
+ * 	ivbytes: a Uint8Array of 16 bytes
+ * 	key: a CryptoKey
+ * 	passphrase: a string
+ * 	pbkdf2salt: a Uint8Array of 8 bytes
  */
 async function generateEncryptionKey(){
 	let key1 = await crypto.subtle.generateKey({name: "AES-CBC",length: 256},true,["encrypt", "decrypt"]);
@@ -74,9 +56,7 @@ async function generateEncryptionKey(){
 	let passphrase = Buffer.from(bytes1).toString('hex')
 
 	let pbkdf2salt = crypto.getRandomValues(new Uint8Array(8));
-	var passphrasekey = await extractPassphraseKey(passphrase);
-
-	let {key, ivbytes} = await extractKeyBytes(pbkdf2salt, passphrasekey, 'encrypt');
+	let {key, ivbytes} = await extractKeyBytes(pbkdf2salt, passphrase, 'encrypt');
 	return {ivbytes, key, passphrase, pbkdf2salt};
 }
 
@@ -105,10 +85,11 @@ async function encryptBytes(plaintextbytes, {ivbytes, key, passphrase, pbkdf2sal
 	return null;
 }
 
+
 /**
- * It takes a file, encrypts it, and returns the encrypted file and the passphrase used to encrypt it
- * @param objFile - the file object to be encrypted
- * @returns A blob object and a passphrase.
+ * It takes a file, encrypts it, and returns the encrypted file and the encryption key
+ * @param objFile - The file object that you want to encrypt.
+ * @returns A blob object, the encryption key, and the encrypted name
  */
 export async function encryptFile(objFile) {
 	let plaintext = await readfile(objFile).catch(function(err){});
@@ -116,47 +97,34 @@ export async function encryptFile(objFile) {
 	let filenamebytes = new TextEncoder('utf-8').encode(objFile.name); //filename
 
 	let keys = await generateEncryptionKey();
-	let resultbytes = await encryptBytes(plaintextbytes,keys); //encrypt file
-	let resultFilebytes = await encryptBytes(filenamebytes,keys); //encrypt filename
-	let encryptedName = Buffer.from(resultFilebytes).toString('hex');
 
-	var blob = new Blob([resultbytes], {type: objFile.type});
-  return {blob,passphrase:keys.passphrase,encryptedName};
+	//encrypt file
+	let resultbytes = await encryptBytes(plaintextbytes,keys); 
+	var encrypted_blob = new Blob([resultbytes], {type: objFile.type});
+
+	//encrypt filename
+	let resultNamebytes = await encryptBytes(filenamebytes,keys); 
+	let encrypted_name = Buffer.from(resultNamebytes).toString('hex');
+
+  	return {encrypted_blob, encryption_key: keys.passphrase, encrypted_name};
 }
 
+
+
 /**
- * It takes a string, generates a random encryption key, encrypts the string with that key, and returns
- * the encrypted string and the key
- * @param text - The text to encrypt
- * @returns An object with two properties: encryptedText and passphrase.
+ * It takes a value, encrypts it, and returns the encrypted value and the encryption key
+ * @param value - The value to be encrypted.
+ * @returns An object with two properties: encrypted_value and encryption_key.
  */
-export async function encryptText(text){
-	let plaintextbytes = new TextEncoder('utf-8').encode(text);
+export async function encryptValue(value){
+	let plaintextbytes = new TextEncoder('utf-8').encode(JSON.stringify(value));
 
 	let keys = await generateEncryptionKey();
 	let resultbytes = await encryptBytes(plaintextbytes,keys);
 
-	let encryptedText = Buffer.from(resultbytes).toString('hex');
-	return {encryptedText,passphrase:keys.passphrase};
+	let ciphertext = Buffer.from(resultbytes).toString('hex');
+	return {ciphertext, encryption_key: keys.passphrase};
 }
-
-/**
- * It takes a string, converts it to bytes, generates an encryption key, encrypts the bytes with the
- * key, and returns the encrypted bytes as a hex string
- * @param value - The value to encrypt.
- * @param encryption_key - This is the key that will be used to encrypt the data. If you don't provide
- * one, it will generate one for you.
- */
-export async function encryptWithKey(value, encryption_key){
-	let plaintextbytes = new TextEncoder('utf-8').encode(text);
-
-	let keys = options && options.encryption_key ?  options.encryption_key : await generateEncryptionKey();
-	let resultbytes = await encryptBytes(plaintextbytes,keys);
-
-	let encryptedText = Buffer.from(resultbytes).toString('hex');
-	return {encryptedText,passphrase:keys.passphrase};
-}
-
 
 /**
  * It takes a byte array, extracts the salt and ciphertext, derives the key from the passphrase,
@@ -165,43 +133,43 @@ export async function encryptWithKey(value, encryption_key){
  * @param passphrase - The passphrase used to encrypt the data.
  * @returns The plaintext bytes.
  */
-async function decryptBytes(bytes, passphrase){
-	let {pbkdf2salt, cipherbytes} = extractCipherAndSalt(bytes);
-	var passphrasekey = await extractPassphraseKey(passphrase);
-	let {key, ivbytes} = await extractKeyBytes(pbkdf2salt, passphrasekey, 'decrypt');
-
+async function decryptBytes(bytes, encryption_key){
+	var pbkdf2salt = bytes.slice(8,16);
+	let cipherbytes = bytes.slice(16);
+	let {key, ivbytes} = await extractKeyBytes(pbkdf2salt, encryption_key, 'decrypt');
 	var plaintextbytes = await crypto.subtle.decrypt({name: "AES-CBC", iv: ivbytes}, key, cipherbytes).catch(function(err){});
 
 	if (!plaintextbytes) return;
 	return new Uint8Array(plaintextbytes);
 }
 
-//decrypt file
 /**
  * It reads the file, decrypts it, and returns the decrypted file as a blob
  * @param objFile - The file object that you want to encrypt.
  * @param passphrase - The passphrase used to encrypt the file.
  * @returns A blob object.
  */
-export async function decryptFile(objFile,passphrase) {
+export async function decryptFile(objFile,encryption_key) {
 	var bytes = await readfile(objFile).catch(function(err){});
 	bytes = new Uint8Array(bytes);
 
-	let plaintextbytes = await decryptBytes(bytes, passphrase);
+	let plaintextbytes = await decryptBytes(bytes, encryption_key);
 	var blob=new Blob([plaintextbytes], {type: objFile.type});
 	return blob;
 }
 
+
 /**
- * It takes an encrypted text and a passphrase, converts the encrypted text to bytes, decrypts the
- * bytes, and returns the decrypted text
- * @param encryptedText - The encrypted text you want to decrypt.
- * @param passphrase - The passphrase you want to use to encrypt the text.
- * @returns The decrypted text.
+ * It takes an encrypted value and an encryption key, decrypts the value, and returns the decrypted
+ * value
+ * @param encrypted_value - The encrypted value you want to decrypt.
+ * @param encryption_key - This encryption key you want to use to decrypt the value.
+ * @returns The decrypted value of the encrypted value.
  */
-export async function decryptText(encryptedText, passphrase){
-	let bytes = new hexStringToUint8Array(encryptedText);
-	let plaintextbytes = await decryptBytes(bytes, passphrase);
+export async function decryptValue(encrypted_value, encryption_key){
+	console.log(JSON.stringify(encrypted_value))
+	let bytes = hexStringToUint8Array(JSON.stringify(encrypted_value));
+	let plaintextbytes = await decryptBytes(bytes, encryption_key);
 	let text = new TextDecoder("utf-8").decode(plaintextbytes);
 	return text;
 }
@@ -212,6 +180,7 @@ export async function decryptText(encryptedText, passphrase){
  * @returns A Uint8Array
  */
 function hexStringToUint8Array(hexString){
+  hexString = hexString.replace('"',"").replace('"',"");
   if (hexString.length % 2 !== 0){
     throw new Error("Invalid hexString");
   }
