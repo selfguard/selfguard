@@ -147,7 +147,7 @@ export async function encryptText(text){
  * @param encryption_key - This is the key that will be used to encrypt the data. If you don't provide
  * one, it will generate one for you.
  */
-export async function encryptWithKey(value,encryption_key){
+export async function encryptWithKey(value, encryption_key){
 	let plaintextbytes = new TextEncoder('utf-8').encode(text);
 
 	let keys = options && options.encryption_key ?  options.encryption_key : await generateEncryptionKey();

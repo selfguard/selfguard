@@ -77,37 +77,35 @@ export default class Fetch {
     return result.data;
   }
 
-  //Array Values
-  async saveArrayKey({key}) {
-    let result = await axios.post(this.url + "/saveArrayKey",{data:{key, api_key:this.api_key }});
+  //Array 
+  async initArray({name}) {
+    let result = await axios.post(this.url + "/initArray",{data:{name, api_key:this.api_key }});
+    return result.data;
+  }
+
+  async saveArrayEncryptionKey({name, encryption_key, user_pub_key}) {
+    let result = await axios.post(this.url + "/saveArrayEncryptionKey",{data:{name, encryption_key, user_pub_key, api_key:this.api_key}});
+    return result.data;
+  }
+
+  async saveArrayValue({encrypted_data, name}) {
+    let result = await axios.post(this.url + "/saveArrayValue",{data:{encrypted_data, name, api_key:this.api_key}});
     return result.data;
   }
 
 
-  async saveArrayEncryptionKey({key, encryption_key, user_pub_key}) {
-    let result = await axios.post(this.url + "/saveArrayEncryptionKey",{data:{key, encryption_key, user_pub_key, api_key:this.api_key}});
+  async getArrayValues({gte, limit, name}) {
+    let result = await axios.post(this.url + "/getArrayValues",{data:{gte, limit, name, api_key: this.api_key}});
     return result.data;
   }
 
-
-  async saveArrayValue({encrypted_data, key}) {
-    let result = await axios.post(this.url + "/saveArrayValue",{data:{encrypted_data, key, api_key:this.api_key}});
+  async getArrayNames() {
+    let result = await axios.post(this.url + "/getArrayNames",{data:{api_key: this.api_key}});
     return result.data;
   }
 
-
-  async getArrayValues({gte, limit, key}) {
-    let result = await axios.post(this.url + "/getArrayValues",{data:{gte, limit, key, api_key: this.api_key}});
-    return result.data;
-  }
-
-  async getArrayKeys() {
-    let result = await axios.post(this.url + "/getArrayKeys",{data:{api_key: this.api_key}});
-    return result.data;
-  }
-
-  async getArrayEncryptionKeys({key}) {
-    let result = await axios.post(this.url + "/getArrayEncryptionKeys",{data:{key, api_key:this.api_key}});
+  async getArrayEncryptionKeys({name}) {
+    let result = await axios.post(this.url + "/getArrayEncryptionKeys",{data:{name, api_key:this.api_key}});
     return result.data;
   }
 

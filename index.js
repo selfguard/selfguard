@@ -5,9 +5,14 @@ import { v4 as uuidv4 } from 'uuid';
 import Fetch from './fetch.js';
 import { ethers } from "ethers";
 
-//sanitize all functions and do exception checking
 export default class SelfGuard {
 
+  /**
+   * It creates a new instance of the SelfGuard class
+   * @param api_key - Your API key.
+   * @param public_key - Optional public key for asymmetric encryption
+   * @param private_key - Optional private key for asymmetric encryption
+   */
   constructor(api_key, public_key, private_key, api_domain) {
     this.api_domain = api_domain || "https://api.selfguard.xyz";
     this.api_key = api_key;
@@ -16,24 +21,27 @@ export default class SelfGuard {
     this.fetch = new Fetch(this.api_domain, this.api_key);
   }
 
+
 // Array Functions
 
  /**
-  * It creates a new array key, and then creates an underlying encryption key for the array.
-  * @param key - the name of the array
-  * @returns A boolean value of true.
+  * It creates a new array, and then creates an underlying encryption key for the array.
+  * @param name - the name of the array
+  * @returns A boolean value of true if the array gets created
   */
-  async createArray(key){
+  async createArray(name){
     try {
-      // create array key
-      await this.fetch.saveArrayKey({key})
+      // create array
+      await this.fetch.initArray({name})
 
       //create underlying encryption key for array
       let encryption_key = uuidv4();
-
+      
       //if public key is set, then asymmetrically encrypt the encryption key
       if(this.pub_key) encryption_key = QuickEncrypt.encrypt(encryption_key, this.pub_key);
-      await this.fetch.saveArrayEncryptionKey({key,user_pub_key:this.pub_key,encryption_key});
+
+      //save encryption key
+      await this.fetch.saveArrayEncryptionKey({name,user_pub_key:this.pub_key,encryption_key});
       return true;
     }
     catch(err){
@@ -42,22 +50,24 @@ export default class SelfGuard {
     }
   }
 
+
  /**
-  * It adds a user to an array.
-  * @param key - the key of the array you want to add a user to
+  * > This function adds a user to an array by encrypting the array's encryption key with the user's
+  * public key
+  * @param name - the name of the array
   * @param user_pub_key - The public key of the user you want to add to the array.
-  * @returns The encryption key for the array.
+  * @returns A boolean value of true if the user was added
   */
-  async addUserToArray(key, user_pub_key){
+  async addUserToArray(name, user_pub_key){
     try {
       //get encryption key
-      let encryption_key = await this.getMyEncryptionKeyForArray(key);
+      let encryption_key = await this.getMyEncryptionKeyForArray(name);
 
       //asymmetrically encrypt the key for the user_pub_key
       encryption_key = QuickEncrypt.encrypt(encryption_key, user_pub_key);
 
       //save the encryption key
-      await this.fetch.saveArrayEncryptionKey({key,user_pub_key,encryption_key});
+      await this.fetch.saveArrayEncryptionKey({name,user_pub_key,encryption_key});
       return true;
     }
     catch(err){
@@ -66,24 +76,24 @@ export default class SelfGuard {
     }
   }
 
+
   /**
-   * It takes a key and a value, encrypts the value with a key that is derived from the key, and then
-   * saves the encrypted value to the database
-   * @param key - The key of the array you want to add to.
+   * It takes a name and a value, gets the encryption key for that array, encrypts the value, and saves
+   * it
+   * @param name - The name of the array you want to add to.
    * @param value - The value you want to save.
-   * @param options - {
-   * @returns A boolean value.
+   * @returns A boolean value of true if the value was saved.
    */
-  async addToArray(key, value, options) {
+  async addToArray(name, value) {
     try {
       //get encryption key
-      let encryption_key = await this.getMyEncryptionKeyForArray(key);
+      let encryption_key = await this.getMyEncryptionKeyForArray(name);
 
       //encrypt the data
       let encrypted_data = ee.encrypt(encryption_key,JSON.stringify(value));
 
       //save the value
-      await this.fetch.saveArrayValue({key,encrypted_data});
+      await this.fetch.saveArrayValue({name,encrypted_data});
       return true;
     }
     catch(err){
@@ -95,18 +105,18 @@ export default class SelfGuard {
   /**
    * It gets the encryption key for the array, fetches the encrypted values in the array, decrypts each
    * value in the array, and returns the decrypted array
-   * @param key - the key of the array
-   * @param gte - greater than or equal to. This is the index of the array you want to start at.
+   * @param name - the name of the array
+   * @param gte - This is the index of the array you want to start at.
    * @param limit - the number of items to return
    * @returns An array of objects.
    */
-  async getArray(key, gte, limit){
+  async getArray(name, gte, limit){
     try {
       // get the encryption key
-      let encryption_key = await this.getMyEncryptionKeyForArray(key);
+      let encryption_key = await this.getMyEncryptionKeyForArray(name);
 
       // fetch the values in the array
-      let data = await this.fetch.getArrayValues({key, limit, gte});
+      let data = await this.fetch.getArrayValues({name, limit, gte});
 
       //decrypt each value in the array
       let arr = data.map((a)=>{
@@ -122,13 +132,13 @@ export default class SelfGuard {
     }
   }
 
-  /**
-   * It returns a promise that resolves to an array of keys from the database
-   * @returns An array of keys
-   */
-  async getArrayKeys() {
+ /**
+  * It returns all the names of the arrays saved with the respective API Key
+  * @returns An array of objects.
+  */
+  async getArrayNames() {
     try {
-      let data = await this.fetch.getArrayKeys();
+      let data = await this.fetch.getArrayNames();
       return data;
     }
     catch(err){
@@ -139,13 +149,13 @@ export default class SelfGuard {
 
   /**
    * It gets the encryption key for an array, and if it's asymmetrically encrypted, it decrypts it
-   * @param key - the key of the array you want to get the encryption key for
+   * @param name - the name of the array you want to get the encryption key for
    * @returns The encryption key for the array.
    */
-  async getMyEncryptionKeyForArray(key){
+  async getMyEncryptionKeyForArray(name){
     try {
       // get the encryption key
-      let encryption_keys = await this.fetch.getArrayEncryptionKeys({key});
+      let encryption_keys = await this.fetch.getArrayEncryptionKeys({name});
 
       //filter it for the encryption key respective to my public key or an
       //encryption key that is not asymmetrically encrypted
@@ -275,14 +285,13 @@ export default class SelfGuard {
    * It takes a string of text and an options object, encrypts the text, uploads the encryption key to
    * the server, and returns an object with the encryption key id and the encrypted text
    * @param text - The text you want to encrypt
-   * @param options - {
    * @returns The encrypted text and the encryption key id
    */
-  async encrypt(text, options){
+  async encrypt(value){
     try {
-      let {passphrase, encryptedText} = await encryptText(text,options);
-      let id = await this.uploadEncryptionKey(passphrase);
-      return {encryption_key_id:id,encrypted_text:encryptedText};
+      let {encryption_key, ciphertext} = await encryptText(value);
+      let encryption_key_id = await this.uploadEncryptionKey(encryption_key);
+      return {encryption_key_id, ciphertext};
     }
     catch(err){
       console.log({err});
