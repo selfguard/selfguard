@@ -18,7 +18,7 @@ export default class Fetch {
     return result.data;
   }
 
-  //Public/Private Key Setters and Getters
+  //Key Pair
   async saveKeyPair({public_key, encrypted_private_key}){
     let result = await axios.post(this.url + "/saveKeyPair",{data:{public_key, encrypted_private_key, api_key:this.api_key}});
     return result.data;
@@ -29,7 +29,7 @@ export default class Fetch {
     return result.data;
   }
 
-  //Tokenization Setters and Getters
+  //Tokenization 
   async saveTokenizedData({id, encrypted_text, encryption_key_id}){
     let result = await axios.post(this.url + "/saveTokenizedData",{data:{id, encrypted_text, encryption_key_id, api_key:this.api_key}});
     return result.data;
@@ -45,7 +45,7 @@ export default class Fetch {
     return result.data;
   }
 
-  //Key Value Setters and Getters
+  //Key Value 
   async saveKeyValueData({key, encrypted_text, encryption_key_id}){
     let result = await axios.post(this.url + "/saveKeyValueData",{data:{ key, encrypted_text, encryption_key_id,api_key:this.api_key}});
     return result.data;
@@ -101,7 +101,6 @@ export default class Fetch {
     return result.data;
   }
 
-
   async getArrayKeys() {
     let result = await axios.post(this.url + "/getArrayKeys",{data:{api_key: this.api_key}});
     return result.data;
@@ -112,6 +111,7 @@ export default class Fetch {
     return result.data;
   }
 
+  //Events
   async retrieveEvents(){
     let result = await axios.post(this.url + "/retrieveEvents",{data:{api_key:this.api_key}});
     return result.data;

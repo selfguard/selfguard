@@ -4,6 +4,12 @@ function makeStorageClient (token) {
   return new Web3Storage({ token })
 }
 
+/**
+ * It takes a token and a cid, and returns a file
+ * @param token - the token you got from the login function
+ * @param cid - The CID of the file you want to retrieve.
+ * @returns A file object
+ */
 export async function retrieveFiles (token,cid) {
   const client = makeStorageClient(token)
   const res = await client.get(cid)
@@ -18,6 +24,11 @@ export async function retrieveFiles (token,cid) {
   return file;
 }
 
+/**
+ * It takes a file, reads it into memory, and then calculates the SHA-256 hash of the file
+ * @param file - The file to be hashed.
+ * @returns A promise that resolves to a hex string.
+ */
 export async function calculateFileHash(file){
   return new Promise((resolve,reject)=>{
     var reader = new FileReader();
@@ -38,6 +49,13 @@ export async function calculateFileHash(file){
   });
 }
 
+/**
+ * It takes a token and a list of files, and returns a promise that resolves to the root CID of the
+ * stored data
+ * @param token - The token you got from the login function
+ * @param files - an array of files to store
+ * @returns A promise that resolves to the root cid of the file.
+ */
 export async function storeWithProgress (token,files) {
   return new Promise((resolve,reject)=>{
     // when each chunk is stored, update the percentage complete and display
@@ -47,16 +65,11 @@ export async function storeWithProgress (token,files) {
     // show the root cid as soon as it's ready
     const onRootCidReady = async (cid) => {
       resolve(cid);
-      // setCid(cid);
     }
 
     const onStoredChunk = async (size) => {
       uploaded += size
       const pct = 100 * (uploaded / totalSize)
-      // setProgress(pct > 100 ? 100 : pct);
-      if(pct >= 100){
-        // setFileName(null);
-      }
     }
     const client = makeStorageClient(token)
     return client.put(files, { onRootCidReady, onStoredChunk })

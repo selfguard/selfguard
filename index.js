@@ -16,9 +16,13 @@ export default class SelfGuard {
     this.fetch = new Fetch(this.api_domain, this.api_key);
   }
 
-  //Array Functions
+// Array Functions
 
-  //Initialize array
+ /**
+  * It creates a new array key, and then creates an underlying encryption key for the array.
+  * @param key - the name of the array
+  * @returns A boolean value of true.
+  */
   async createArray(key){
     try {
       // create array key
@@ -38,9 +42,13 @@ export default class SelfGuard {
     }
   }
 
-  //Add a new encryption key to the array that is able to be decrypted with the
-  //respective user's private key
-  async addUserToArray(key, user_pub_key, options){
+ /**
+  * It adds a user to an array.
+  * @param key - the key of the array you want to add a user to
+  * @param user_pub_key - The public key of the user you want to add to the array.
+  * @returns The encryption key for the array.
+  */
+  async addUserToArray(key, user_pub_key){
     try {
       //get encryption key
       let encryption_key = await this.getMyEncryptionKeyForArray(key);
@@ -58,7 +66,14 @@ export default class SelfGuard {
     }
   }
 
-  //Add a new value to the array
+  /**
+   * It takes a key and a value, encrypts the value with a key that is derived from the key, and then
+   * saves the encrypted value to the database
+   * @param key - The key of the array you want to add to.
+   * @param value - The value you want to save.
+   * @param options - {
+   * @returns A boolean value.
+   */
   async addToArray(key, value, options) {
     try {
       //get encryption key
@@ -77,7 +92,14 @@ export default class SelfGuard {
     }
   }
 
-  //Get the array and specify which values are requested through gte and limit
+  /**
+   * It gets the encryption key for the array, fetches the encrypted values in the array, decrypts each
+   * value in the array, and returns the decrypted array
+   * @param key - the key of the array
+   * @param gte - greater than or equal to. This is the index of the array you want to start at.
+   * @param limit - the number of items to return
+   * @returns An array of objects.
+   */
   async getArray(key, gte, limit){
     try {
       // get the encryption key
@@ -100,7 +122,10 @@ export default class SelfGuard {
     }
   }
 
-  //Retrieve all the array names created with the respective API Key
+  /**
+   * It returns a promise that resolves to an array of keys from the database
+   * @returns An array of keys
+   */
   async getArrayKeys() {
     try {
       let data = await this.fetch.getArrayKeys();
@@ -112,7 +137,11 @@ export default class SelfGuard {
     }
   }
 
-  //get the encryption key for the array for this user
+  /**
+   * It gets the encryption key for an array, and if it's asymmetrically encrypted, it decrypts it
+   * @param key - the key of the array you want to get the encryption key for
+   * @returns The encryption key for the array.
+   */
   async getMyEncryptionKeyForArray(key){
     try {
       // get the encryption key
@@ -138,9 +167,15 @@ export default class SelfGuard {
     }
   }
 
-  //Key-Value Functions
+// Key-Value Functions
 
-  //put value for key
+  /**
+   * If the key exists, update it. If it doesn't exist, create it
+   * @param key - the key to store the value under
+   * @param value - The value to be stored in the database.
+   * @param options - {
+   * @returns A boolean value.
+   */
   async put(key, value, options) {
     try {
       //if key exists, update it
@@ -164,7 +199,12 @@ export default class SelfGuard {
     return true;
   }
 
-  //retrieve value for key
+  /**
+   * It retrieves the encrypted value from the database and decrypts it.
+   * @param key - The key you want to retrieve
+   * @param options - {
+   * @returns The value of the key
+   */
   async get(key, options) {
     try {
       let {encryption_key_id, encrypted_text, id} = await this.fetch.retrieveKeyValueData({key});
@@ -177,8 +217,11 @@ export default class SelfGuard {
     }
   }
 
-  //get all the keys created by this API_Key
-  //options can include limit and gte
+  /**
+   * It returns all the keys for this user in the database.
+   * @param options - {
+   * @returns An array of keys
+   */
   async getKeys(options) {
     try {
       if(!options) options = {limit: 50, gte: 0};
@@ -191,9 +234,13 @@ export default class SelfGuard {
     }
   }
 
-  //Tokenization Functions
+//Tokenization Functions
 
-  //tokenize data
+/**
+ * It takes in some data, encrypts it, and saves it to the database.
+ * @param data - The data you want to tokenize.
+ * @returns A tokenized data object.
+ */
   async tokenize(data) {
     try {
       let {encryption_key_id, encrypted_text} = await this.encrypt(JSON.stringify(data));
@@ -207,7 +254,11 @@ export default class SelfGuard {
     }
   }
 
-  //retrieve tokenized data
+  /**
+   * It takes an id and returns the decrypted data.
+   * @param id - The id of the tokenized data you want to retrieve.
+   * @returns The decrypted data is being returned.
+   */
   async detokenize(id) {
     try {
       let {encryption_key_id, encrypted_text} = await this.fetch.retrieveTokenizedData({id})
@@ -220,9 +271,13 @@ export default class SelfGuard {
     }
   }
 
-  //Encryption Functions
-
-  //encrypt data and return the encryption_key_id and the raw ciphertext
+  /**
+   * It takes a string of text and an options object, encrypts the text, uploads the encryption key to
+   * the server, and returns an object with the encryption key id and the encrypted text
+   * @param text - The text you want to encrypt
+   * @param options - {
+   * @returns The encrypted text and the encryption key id
+   */
   async encrypt(text, options){
     try {
       let {passphrase, encryptedText} = await encryptText(text,options);
@@ -235,7 +290,12 @@ export default class SelfGuard {
     }
   }
 
-  // encrypt data with a password and return the ciphertext
+  /**
+   * It takes a string of text and a password, and returns an encrypted string of text
+   * @param text - The text to be encrypted
+   * @param password - The password to use for encryption.
+   * @returns The encrypted text.
+   */
   encryptWithPassword(text, password){
     try {
       return ee.encrypt(password, text);
@@ -246,7 +306,13 @@ export default class SelfGuard {
     }
   }
 
-  //encrypt a file
+  /**
+   * It takes a file, encrypts it, uploads the encryption key to the server, and returns the encrypted
+   * file and the encryption key id
+   * @param file - The file you want to encrypt
+   * @param options - {
+   * @returns The encrypted file and the encryption key id
+   */
   async encryptFile(file,options){
     try {
       let {blob,passphrase,encryptedName} = await encryptFile(file,options);
@@ -260,7 +326,13 @@ export default class SelfGuard {
     }
   }
 
-  //decrypt data based on the encryption_key_id
+  /**
+   * It decrypts the text using the encryption key.
+   * @param text - The text to be decrypted
+   * @param id - The id of the user you want to encrypt/decrypt the text for.
+   * @param options - {
+   * @returns The decrypted text.
+   */
   async decrypt(text, id, options){
     try {
       let encryption_key = options && options.encryption_key ? options.encryption_key : await this.downloadEncryptionKey(id);
@@ -273,7 +345,12 @@ export default class SelfGuard {
     }
   }
 
-  //decrypt data with a password
+  /**
+   * It decrypts the text with the password.
+   * @param text - The text to be encrypted or decrypted.
+   * @param password - The password used to encrypt the text.
+   * @returns The decrypted text.
+   */
   decryptWithPassword(text, password){
     try {
       return ee.decrypt(password, text);
@@ -284,7 +361,13 @@ export default class SelfGuard {
     }
   }
 
-  //decrypt file with encryption_key_id
+  /**
+   * It decrypts a file.
+   * @param file - The file to be decrypted
+   * @param id - The id of the file you want to download
+   * @param options - an object with the following properties:
+   * @returns A decrypted file
+   */
   async decryptFile(file, id, options){
     let encryption_key = options && options.encryption_key ? options.encryption_key : await this.downloadEncryptionKey(id);
     let decrypted = await decryptFile(file,encryption_key);
@@ -293,7 +376,11 @@ export default class SelfGuard {
     return decryptedFile
   }
 
-  //Download Encryption Key
+  /**
+   * > This function downloads the encryption key from the server and decrypts it with the private key
+   * @param id - the id of the encryption key you want to download
+   * @returns The encryption key is being returned.
+   */
   async downloadEncryptionKey(id){
     try {
       let encryption_key = await this.fetch.retrieveEncryptionKey({id});
@@ -306,7 +393,12 @@ export default class SelfGuard {
     }
   }
 
-  //Upload Encryption Key
+  /**
+   * It takes an encryption key, encrypts it with the user's public key, and then uploads it to the
+   * server
+   * @param encryption_key - The encryption key that you want to upload to the server.
+   * @returns The encryption key is being returned.
+   */
   async uploadEncryptionKey(encryption_key){
     try {
       if(this.pub_key) encryption_key = QuickEncrypt.encrypt(encryption_key, this.pub_key) // wrap with public key
@@ -321,7 +413,11 @@ export default class SelfGuard {
 
   // Key Pair Functions
 
-  //create key pair for rsa or ecsda
+  /**
+   * It creates a random key pair of the type specified
+   * @param type - The type of keypair to generate. Currently only supports 'ecdsa' and 'rsa'.
+   * @returns An object with a public key and a private key.
+   */
   createKeyPair(type){
     try {
       if(type === 'ecdsa'){
@@ -345,7 +441,11 @@ export default class SelfGuard {
     }
   }
 
-  //get all the key pairs associated with thsi api key
+  /**
+   * This function is an asynchronous function that returns a promise. The promise is resolved with the
+   * data returned from the fetch.retrieveKeyPairs() function
+   * @returns An array of objects.
+   */
   async getKeyPairs(){
     try {
       let data = await this.fetch.retrieveKeyPairs();
@@ -357,7 +457,12 @@ export default class SelfGuard {
     }
   }
 
-  //upload the key pair
+  /**
+   * It takes a public and private key, encrypts the private key with a password, and then sends the
+   * public key and encrypted private key to the server
+   * @param password - The password you want to use to encrypt your private key.
+   * @returns The data is being returned.
+   */
   async uploadKeyPair({public_key, private_key}, password){
     try {
       let encrypted_private_key = this.encryptWithPassword(private_key,password);
@@ -372,7 +477,10 @@ export default class SelfGuard {
 
   //Notifications
 
-  // Send Email
+  /**
+   * It sends an email.
+   * @returns A boolean value of true.
+   */
   async sendEmail({address, from, fromName, replyTo, replyToName, subject, html}){
     try {
       await this.fetch.sendEmailCall({address, from, fromName, replyTo, replyToName, subject, html});
@@ -384,7 +492,10 @@ export default class SelfGuard {
     }
   }
 
-  // Send SMS
+  /**
+   * It sends an SMS to the address provided.
+   * @returns A promise that resolves to true if the SMS was sent successfully.
+   */
   async sendSMS({address, text}){
     try {
       await this.fetch.sendSMSCall({address, text});
@@ -396,9 +507,13 @@ export default class SelfGuard {
     }
   }
 
-  //Events
+  // Events
 
-  // Get Events generated by this api key (i.e -> retrieving encryption keys)
+  /**
+   * This function is an asynchronous function that calls the retrieveEvents function in the fetch.js
+   * file and returns the data
+   * @returns An array of objects.
+   */
   async retrieveEvents(){
     try {
       let data = await this.fetch.retrieveEvents();
@@ -410,15 +525,3 @@ export default class SelfGuard {
     }
   }
 }
-
-//rotate encryption key
-// (async ()=>{
-//   let encrypted = await this.encrypt(value);
-//   let update = await updateKeyValueData(this.api_domain, this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
-// })()
-
-//rotate encryption key
-// (async ()=>{
-//   let encrypted = await this.encrypt(decrypted_data);
-//   let update = await updateTokenizedData(this.api_domain,this.api_key, id, encrypted.encrypted_text, encrypted.encryption_key_id);
-// })()
