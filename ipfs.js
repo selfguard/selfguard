@@ -20,7 +20,6 @@ export async function retrieveFiles (token,cid) {
   // unpack File objects from the response
   const files = await res.files()
   let file = files[0];
-  // let fileText = await file.text();
   return file;
 }
 
@@ -52,7 +51,7 @@ export async function calculateFileHash(file){
 /**
  * It takes a token and a list of files, and returns a promise that resolves to the root CID of the
  * stored data
- * @param token - The token you got from the login function
+ * @param token - The token you got from the web3.storage
  * @param files - an array of files to store
  * @returns A promise that resolves to the root cid of the file.
  */

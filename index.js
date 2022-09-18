@@ -24,6 +24,10 @@ export default class SelfGuard {
    */
    async encrypt(value){
     try {
+
+      //if the value is an object, convert it to a string
+      if(typeof value === "object") value = JSON.stringify(value);
+
       let {encryption_key, ciphertext} = await encryptValue(value);
       let encryption_key_id = await this.fetch.saveEncryptionKey(encryption_key);
       return {encryption_key_id, ciphertext};
@@ -43,6 +47,8 @@ export default class SelfGuard {
   */
   encryptWithPassword(value, password){
     try {
+      //if the value is an object, convert it to a string
+      if(typeof value === "object") value = JSON.stringify(value);
       return ee.encrypt(password, value);
     }
     catch(err){
@@ -79,9 +85,13 @@ export default class SelfGuard {
   async decrypt(value, encryption_key_id){
     try {
       let encryption_key = await this.fetch.retrieveEncryptionKey(encryption_key_id);
-      console.log({value,encryption_key});
-      let decrypted_text = await decryptValue(value, encryption_key);
-      return decrypted_text;
+      let decrypted_value = await decryptValue(value, encryption_key);
+
+      //convert to object if needed
+      try {
+        decrypted_value = typeof JSON.parse(decrypted_value) === 'object' ? JSON.parse(decrypted_value) : decrypted_value;
+      } catch(err){}
+      return decrypted_value;
     }
     catch(err){
       console.log({err});
@@ -97,7 +107,13 @@ export default class SelfGuard {
    */
   decryptWithPassword(value, password){
     try {
-      return ee.decrypt(password, value);
+      let decrypted_value = ee.decrypt(password, value);
+
+      //convert to object if needed
+      try {
+        decrypted_value = typeof JSON.parse(decrypted_value) === 'object' ? JSON.parse(decrypted_value) : decrypted_value;
+      } catch(err){}
+      return decrypted_value;
     }
     catch(err){
       console.log({err});
@@ -136,7 +152,7 @@ export default class SelfGuard {
   */
  async tokenize(value) {
   try {
-    let {encryption_key_id, ciphertext} = await this.encrypt(JSON.stringify(value));
+    let {encryption_key_id, ciphertext} = await this.encrypt(value);
     let id = "tok_"+uuidv4();
     await this.fetch.saveTokenizedData({id, ciphertext, encryption_key_id});
     return id;
@@ -156,7 +172,7 @@ async detokenize(id) {
   try {
     let {encryption_key_id, ciphertext} = await this.fetch.retrieveTokenizedData({id})
     let decrypted_data = await this.decrypt(ciphertext, encryption_key_id);
-    return JSON.parse(decrypted_data);
+    return decrypted_data;
   }
   catch(err){
     console.log({err});
@@ -171,7 +187,7 @@ async detokenize(id) {
    * @param type - The type of keypair to generate. Currently only supports 'ecdsa' and 'rsa'.
    * @returns An object with a public key and a private key.
    */
-   createKeyPair(type){
+  createKeyPair(type){
     try {
       if(type === 'ecdsa'){
         let wallet = ethers.Wallet.createRandom();
@@ -271,7 +287,7 @@ async detokenize(id) {
     try {
       let {encryption_key_id, ciphertext} = await this.fetch.retrieveKeyValueData({key});
       let value = await this.decrypt(ciphertext, encryption_key_id);
-      return JSON.parse(value);
+      return value;
     }
     catch(err){
       console.log({err})
@@ -365,7 +381,7 @@ async detokenize(id) {
       let encryption_key = await this.getMyEncryptionKeyForArray(name);
 
       //encrypt the data
-      let ciphertext = ee.encrypt(encryption_key, JSON.stringify(value));
+      let ciphertext = this.encryptWithPassword(value, encryption_key);
 
       //save the value
       await this.fetch.saveArrayValue({name ,ciphertext});
@@ -394,12 +410,9 @@ async detokenize(id) {
       let data = await this.fetch.getArrayValues({name, limit, gte});
 
       //decrypt each value in the array
-      let arr = data.map((a)=>{
-        let data = ee.decrypt(encryption_key, a.ciphertext);
-        return JSON.parse(data);
+      return data.map((a)=>{
+        return this.decryptWithPassword(a.ciphertext, encryption_key);
       });
-
-      return arr;
     }
     catch(err){
       console.log({err});

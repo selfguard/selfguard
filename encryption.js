@@ -92,7 +92,7 @@ async function encryptBytes(plaintextbytes, {ivbytes, key, passphrase, pbkdf2sal
  * @returns A blob object, the encryption key, and the encrypted name
  */
 export async function encryptFile(objFile) {
-	let plaintext = await readfile(objFile).catch(function(err){});
+	let plaintext = await readfile(objFile);
 	let plaintextbytes = new Uint8Array(plaintext); //raw file
 	let filenamebytes = new TextEncoder('utf-8').encode(objFile.name); //filename
 
@@ -117,7 +117,7 @@ export async function encryptFile(objFile) {
  * @returns An object with two properties: encrypted_value and encryption_key.
  */
 export async function encryptValue(value){
-	let plaintextbytes = new TextEncoder('utf-8').encode(JSON.stringify(value));
+	let plaintextbytes = new TextEncoder('utf-8').encode(value);
 
 	let keys = await generateEncryptionKey();
 	let resultbytes = await encryptBytes(plaintextbytes,keys);
@@ -167,8 +167,7 @@ export async function decryptFile(objFile,encryption_key) {
  * @returns The decrypted value of the encrypted value.
  */
 export async function decryptValue(encrypted_value, encryption_key){
-	console.log(JSON.stringify(encrypted_value))
-	let bytes = hexStringToUint8Array(JSON.stringify(encrypted_value));
+	let bytes = hexStringToUint8Array(encrypted_value);
 	let plaintextbytes = await decryptBytes(bytes, encryption_key);
 	let text = new TextDecoder("utf-8").decode(plaintextbytes);
 	return text;
@@ -180,7 +179,6 @@ export async function decryptValue(encrypted_value, encryption_key){
  * @returns A Uint8Array
  */
 function hexStringToUint8Array(hexString){
-  hexString = hexString.replace('"',"").replace('"',"");
   if (hexString.length % 2 !== 0){
     throw new Error("Invalid hexString");
   }
