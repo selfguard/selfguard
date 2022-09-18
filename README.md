@@ -74,14 +74,17 @@ Allows you to retrieve all encrypted key pairs stored with this account
 
 ```javascript
 
-await sg.getKeyPairs();
+let key_pairs = await sg.getKeyPairs();
+
+//decrypt the last uploaded key pair
+let  decrypted_key_pair = sg.decryptWithPassword(key_pairs[key_pairs.length -1].encrypted_private_key,'password');
 
 ```
 
 ## Encryption
 
 ### Encrypt:
-Allows you to encrypt any piece of data and receive the respective encryption key id (the encryption key is stored with SelfGuard) and the encrypted text.
+Allows you to encrypt any piece of data and receive the respective encryption key id (the encryption key is stored with SelfGuard) and the encrypted text. 
 ```javascript
 
 let {encrypted_text, encryption_key_id} = await sg.encrypt( 'This is some super top secret text!')
@@ -92,7 +95,7 @@ console.log({encrypted_text,encryption_key_id})
 ```
 
 ### Decrypt:
-Allows you to decrypt previously encrypted data by providing the encrypted text and the encryption key id respective to the encrypted data.
+Allows you to decrypt previously encrypted data by providing the encrypted text and the encryption key id respective to the encrypted data. 
 ```javascript
 
 let decryptedText = await sg.decrypt(encrypted_text, encryption_key_id)
@@ -125,7 +128,7 @@ console.log(decryptedText)
 ## Data Tokenization
 
 ### Tokenize:
-Allows you to encrypt data and store the encrypted data with SelfGuard itself.
+Allows you to encrypt data and store the encrypted data with SelfGuard itself. 
 ```javascript
 
 let token_id = await sg.tokenize( 'This is some super top secret text!')
@@ -147,7 +150,7 @@ console.log(data)
 ## Encrypted Key/Value Storage
 
 ### Put:
-Allows you to store any key value data where the value is encrypted.
+Allows you to store any key value data where the value is encrypted. 
 ```javascript
 
 let success = await sg.put('key','value');
@@ -181,22 +184,22 @@ Used as an encrypted database to store key -> multiple values. Value data is ful
 
 ```javascript
 
-await sg.createArray('key');
+await sg.createArray('name');
 
 ```
 
 ### Add To Array
 ```javascript
 
-await sg.addToArray('key','value');
-await sg.addToArray('key','value2');
+await sg.addToArray('name','value');
+await sg.addToArray('name','value2');
 
 ```
 
 ### Add User To Array
 ```javascript
 
-await sg.addUserToArray('key','0xabc...');
+await sg.addUserToArray('name','0xabc...');
 
 ```
 
@@ -204,20 +207,20 @@ await sg.addUserToArray('key','0xabc...');
 ### Get Array
 ```javascript
 
-let data = await sg.getArray('key');
+let data = await sg.getArray('name');
 console.log(data)
 // ['value','value2']
 
 ```
 
-### Get Array Keys
+### Get Array Names
 ```javascript
 
-let keys = await sg.getArrayKeys();
+let keys = await sg.getArrayNames();
 console.log(keys);
 /*
 [{
-	key: 'key',
+	name: 'name',
 	length: 2,
 	created_at: '2022-09-07T19:58:35.616997+00:00'
 }]
