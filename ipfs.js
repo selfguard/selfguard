@@ -1,4 +1,6 @@
 import { Web3Storage } from 'web3.storage';
+import {Crypto} from '@peculiar/webcrypto';
+let crypto = new Crypto();
 
 function makeStorageClient (token) {
   return new Web3Storage({ token })
@@ -20,6 +22,7 @@ export async function retrieveFiles (token,cid) {
   // unpack File objects from the response
   const files = await res.files()
   let file = files[0];
+  console.log(file);
   return file;
 }
 
@@ -29,22 +32,12 @@ export async function retrieveFiles (token,cid) {
  * @returns A promise that resolves to a hex string.
  */
 export async function calculateFileHash(file){
-  return new Promise((resolve,reject)=>{
-    var reader = new FileReader();
-    reader.onload = async function(ev) {
-        try {
-          let hashBuffer = await crypto.subtle.digest('SHA-256', ev.target.result);
-            // Convert hex to hash, see https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest#converting_a_digest_to_a_hex_string
-          const hashArray = Array.from(new Uint8Array(hashBuffer));
-          const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
-          resolve(hashHex);
-        }
-        catch(err){
-          console.log({err});
-          reject(err);
-        }
-    };
-    reader.readAsArrayBuffer(file);
+  return new Promise(async (resolve,reject)=>{
+    let rawFileBytes = await file.arrayBuffer();
+    let hashBuffer = await crypto.subtle.digest('SHA-256',rawFileBytes);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
+    resolve(hashHex);
   });
 }
 

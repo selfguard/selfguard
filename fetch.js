@@ -23,6 +23,22 @@ export default class Fetch {
     if(this.pub_key) encryption_key = QuickEncrypt.decrypt(encryption_key, this.private_key) // unwrap with private key
     return encryption_key;
   }
+
+  //File Storage
+  async saveFileAssociation({name, type, document_hash})  {
+    let result = await axios.post(this.url + "/saveFileAssociation",{data:{api_key:this.api_key, name, type, document_hash}});
+    return result.data
+  }
+
+  async saveFileShard({file_id, cid, encryption_key_id, index}){
+    let result = await axios.post(this.url + "/saveFileShard",{data:{api_key:this.api_key, file_id, cid, encryption_key_id, index}});
+    return result.data
+  }
+
+  async retrieveFile(id){
+    let result = await axios.post(this.url + "/retrieveFile",{data:{api_key:this.api_key, id}});
+    return result.data
+  }
   
    // Tokenization 
    async saveTokenizedData({id, ciphertext, encryption_key_id}){

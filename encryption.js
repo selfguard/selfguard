@@ -1,21 +1,8 @@
 import {Crypto} from '@peculiar/webcrypto';
+import { File, Blob } from "web-file-polyfill"
+
 let crypto = new Crypto();
 var pbkdf2iterations=10000;
-
-/**
- * It reads a file and returns a promise that resolves to the file's contents
- * @param file - The file to read.
- * @returns A promise that resolves to the file contents.
- */
-function readfile(file){
-	return new Promise((resolve, reject) => {
-		var fr = new FileReader();
-		fr.onload = () => {
-			resolve(fr.result )
-		};
-		fr.readAsArrayBuffer(file);
-	});
-}
 
 /**
  * It takes a salt, a passphrase, and a type of key to import, and returns an AES key, an IV, and
@@ -33,7 +20,7 @@ async function extractKeyBytes(pbkdf2salt, passphrase, type){
 		pbkdf2bytes = new Uint8Array(pbkdf2bytes);
 		let keybytes=pbkdf2bytes.slice(0,32);
 		let ivbytes=pbkdf2bytes.slice(32);
-		var key = await crypto.subtle.importKey('raw', keybytes, {name: 'AES-CBC', length: 256}, false, [type]).catch(function(err){console.log({err})});
+		var key = await crypto.subtle.importKey('raw', keybytes, {name: 'AES-CBC', length: 256}, false, [type]);
 		return {key,ivbytes,pbkdf2bytes}
 	}
 	catch(err){
@@ -85,31 +72,45 @@ async function encryptBytes(plaintextbytes, {ivbytes, key, passphrase, pbkdf2sal
 	return null;
 }
 
-
 /**
  * It takes a file, encrypts it, and returns the encrypted file and the encryption key
  * @param objFile - The file object that you want to encrypt.
  * @returns A blob object, the encryption key, and the encrypted name
  */
-export async function encryptFile(objFile) {
-	let plaintext = await readfile(objFile);
-	let plaintextbytes = new Uint8Array(plaintext); //raw file
-	let filenamebytes = new TextEncoder('utf-8').encode(objFile.name); //filename
+export async function encryptFile(objFile, numShards) {
 
-	let keys = await generateEncryptionKey();
 
-	//encrypt file
-	let resultbytes = await encryptBytes(plaintextbytes,keys); 
-	var encrypted_blob = new Blob([resultbytes], {type: objFile.type});
+	//handle number of shards
+	if(!numShards || isNaN(numShards)) numShards = 1;
+	if(parseInt(numShards) > 10) numShards = 10;
+	
+	//read in file
+	let rawFileBytes = await objFile.arrayBuffer();
 
-	//encrypt filename
-	let resultNamebytes = await encryptBytes(filenamebytes,keys); 
-	let encrypted_name = Buffer.from(resultNamebytes).toString('hex');
 
-  	return {encrypted_blob, encryption_key: keys.passphrase, encrypted_name};
+	//calculat the length of each shard
+	let shardLength = Math.min(rawFileBytes.byteLength / numShards);
+
+	//split into shards
+	let shards = [];
+	
+	for(let i = 0; i < numShards; i++) {
+		//build shard
+		let start = i * shardLength;
+
+		//if we are at the last shard, ensure its length goes until the end of the array
+		let end = i <= numShards - 1 ? start + shardLength : rawFileBytes.byteLength;
+		let shardBytes = rawFileBytes.slice(start, end);
+		
+		//encrypt shard
+		let keys = await generateEncryptionKey();
+		let encrypted_shard_bytes = await encryptBytes(shardBytes, keys); 
+		var encrypted_file = new File([encrypted_shard_bytes], objFile.name, {type: objFile.type});
+
+		shards.push({encrypted_file, encryption_key: keys.passphrase});
+	}
+	return shards;
 }
-
-
 
 /**
  * It takes a value, encrypts it, and returns the encrypted value and the encryption key
@@ -138,24 +139,20 @@ async function decryptBytes(bytes, encryption_key){
 	let cipherbytes = bytes.slice(16);
 	let {key, ivbytes} = await extractKeyBytes(pbkdf2salt, encryption_key, 'decrypt');
 	var plaintextbytes = await crypto.subtle.decrypt({name: "AES-CBC", iv: ivbytes}, key, cipherbytes).catch(function(err){});
-
 	if (!plaintextbytes) return;
 	return new Uint8Array(plaintextbytes);
 }
 
 /**
- * It reads the file, decrypts it, and returns the decrypted file as a blob
- * @param objFile - The file object that you want to encrypt.
- * @param passphrase - The passphrase used to encrypt the file.
- * @returns A blob object.
+ * It reads a file, decrypts it, and returns the decrypted bytes
+ * @param objFile - The file path to the encrypted shard
+ * @param encryption_key - The encryption key used to encrypt the shard.
+ * @returns The decrypted bytes of the file.
  */
-export async function decryptFile(objFile,encryption_key) {
-	var bytes = await readfile(objFile).catch(function(err){});
-	bytes = new Uint8Array(bytes);
-
-	let plaintextbytes = await decryptBytes(bytes, encryption_key);
-	var blob=new Blob([plaintextbytes], {type: objFile.type});
-	return blob;
+export async function decryptShard(objFile, encryption_key) {
+	var bytes = await objFile.arrayBuffer();
+	let decrypted_bytes = await decryptBytes(bytes, encryption_key);
+	return decrypted_bytes;
 }
 
 
@@ -194,4 +191,13 @@ function hexStringToUint8Array(hexString){
 
   return arrayBuffer;
 }
+
+export function combineUint8Arrays(arrays){
+	const flatNumberArray = arrays.reduce((acc, curr) => {
+	  acc.push(...curr);
+	  return acc;
+	}, []);
+  
+	return new Uint8Array(flatNumberArray);
+};
 

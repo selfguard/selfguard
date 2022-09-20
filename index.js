@@ -1,9 +1,13 @@
-import {encryptValue, encryptFile, decryptValue, decryptFile} from './encryption.js';
+import {encryptValue, encryptFile, decryptValue, decryptShard, combineUint8Arrays} from './encryption.js';
 import QuickEncrypt from 'quick-encrypt';
 import ee from 'easy-encryption';
 import { v4 as uuidv4 } from 'uuid';
 import Fetch from './fetch.js';
 import { ethers } from "ethers";
+import {storeWithProgress, calculateFileHash, retrieveFiles} from './ipfs.js';
+import { File } from "web-file-polyfill"
+
+let WEB3_STORAGE_URL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDQxRjQ1QTY3NDQzRGJDNmQ3N0NEOThFYjJDZDVFZThERjRDMTlCYjciLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NTg5NTI4NTYxOTksIm5hbWUiOiJ0ZXN0In0.I-fSz9b0Thg3nC5bnHHURoYiaXKHC9E3dcvJM7IdV4A';
 
 export default class SelfGuard {
 
@@ -58,17 +62,32 @@ export default class SelfGuard {
   }
 
   /**
-   * It takes a file, encrypts it, uploads the encryption key to the server, and returns the encrypted
-   * file and the encryption key id
+   * It takes a file, splits it into shards, encrypts it, and uploads the encryption key to the server, and returns the file id
    * @param file - The file you want to encrypt.
-   * @returns The encrypted file and the encryption key id.
+   * @returns The file id
    */
-  async encryptFile(file){
+  async encryptFile(file, numShards){
     try {
-      let {encrypted_blob, encryption_key, encrypted_name} = await encryptFile(file);
-      let encryption_key_id = await this.fetch.saveEncryptionKey(encryption_key);
-      let encrypted_file = new File([encrypted_blob], encrypted_name, {type:file.type});
-      return {encrypted_file, encryption_key_id};
+      // shard the file and encryp them
+      let shards = await encryptFile(file,numShards);
+
+      //save file assocation for each shard
+      let document_hash = await calculateFileHash(file);
+      let file_id = await this.fetch.saveFileAssociation({name:file.name, type:file.type, document_hash})
+
+      //save each shard and associated encryption_key, parallelize them
+      let promises = [];
+      for(let i = 0; i < shards.length;i++){
+        // promises.push(new Promise(async (resolve,reject)=>{
+          let {encryption_key, encrypted_file} = shards[i];
+          let encryption_key_id = await this.fetch.saveEncryptionKey(encryption_key);
+          let cid = await storeWithProgress(WEB3_STORAGE_URL,[encrypted_file]);
+          await this.fetch.saveFileShard({file_id, cid, encryption_key_id, index:i});
+          // resolve(true);
+        // }));
+      }
+      await Promise.all(promises);
+      return file_id
     }
     catch(err){
       console.log({err});
@@ -128,12 +147,27 @@ export default class SelfGuard {
    * @param options - an object with the following properties:
    * @returns A decrypted file
    */
-  async decryptFile(file, encryption_key_id){
+  async decryptFile(file_id){
     try {
-      let encryption_key = await this.fetch.retrieveEncryptionKey(encryption_key_id);
-      let decrypted_blob = await decryptFile(file, encryption_key);
-      let decrypted_name = await decryptValue(file.name, encryption_key);
-      let decrypted_file = new File([decrypted_blob],decrypted_name,{type:file.type});
+      let {file_shards, name, type} = await this.fetch.retrieveFile(file_id);
+
+      //decrypt each shard
+      let promises = [];
+      for(let i = 0; i < file_shards.length;i++){
+        promises.push(new Promise(async (resolve,reject)=>{
+          let {encryption_key, cid} = file_shards[i];
+          encryption_key = encryption_key.key;
+          let encrypted_file = await retrieveFiles(WEB3_STORAGE_URL, cid);
+          let decrypted_file = await decryptShard(encrypted_file, encryption_key);
+          resolve(decrypted_file);
+        }));
+      }
+      let decrypted_shards = await Promise.all(promises);
+      
+      //recombine the decrypted shards
+      let combinedFile = combineUint8Arrays(decrypted_shards);
+
+      let decrypted_file = new File([combinedFile],name,{type});
       return decrypted_file
     } 
     catch(err){
