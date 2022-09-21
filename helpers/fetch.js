@@ -39,6 +39,11 @@ export default class Fetch {
     let result = await axios.post(this.url + "/retrieveFile",{data:{api_key:this.api_key, id}});
     return result.data
   }
+
+  async retrieveFiles(){
+    let result = await axios.post(this.url + "/retrieveFiles",{data:{api_key:this.api_key}});
+    return result.data
+  }
   
    // Tokenization 
    async saveTokenizedData({id, ciphertext, encryption_key_id}){

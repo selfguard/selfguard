@@ -125,6 +125,33 @@ console.log(decryptedText)
 ```
 
 
+### File Storage
+
+### Encrypt File
+Allows you to shard and encrypt any file and automatically upload it to IPFS
+```javascript
+
+  const file = new File(["foobartexthello"], "foo.txt", {type: "text/plain"});
+  let fileId = await sg.encryptFile(file, 3);
+
+```
+
+### Decrypt File
+Allows you to retrieve the file shards for the associated file id and decrypt them 
+```javascript
+
+let file2 = await sg.decryptFile(fileId);
+
+```
+
+### Get Files
+Allows you to retrieve all files stored with SelfGuard + IPFS
+```javascript
+
+let files = await sg.getFiles();
+
+```
+
 ## Data Tokenization
 
 ### Tokenize:
