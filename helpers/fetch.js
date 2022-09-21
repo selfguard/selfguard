@@ -37,6 +37,16 @@ export default class Fetch {
 
   async retrieveFile(id){
     let result = await axios.post(this.url + "/retrieveFile",{data:{api_key:this.api_key, id}});
+    let private_key = this.private_key;
+    if(result && result.data){
+      result.data.file_shards = result.data.file_shards.map((shard)=>{
+        if(private_key) {
+          let key = QuickEncrypt.decrypt(shard.encryption_key.key, private_key);
+          shard.encryption_key.key = QuickEncrypt.decrypt(shard.encryption_key.key, private_key) // unwrap with private key
+        }
+        return shard;
+      });
+    }
     return result.data
   }
 

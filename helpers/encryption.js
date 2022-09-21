@@ -193,11 +193,14 @@ function hexStringToUint8Array(hexString){
 }
 
 export function combineUint8Arrays(arrays){
-	const flatNumberArray = arrays.reduce((acc, curr) => {
-	  acc.push(...curr);
-	  return acc;
-	}, []);
+	let array = [];
+	for (let i = 0; i < arrays.length; i++) {
+		let arr = arrays[i];
+		for(let j = 0; j < arr.length; j++) {
+			array.push(arr[j])
+		}
+	}
   
-	return new Uint8Array(flatNumberArray);
+	return new Uint8Array(array);
 };
 

@@ -55,8 +55,14 @@ export async function decryptFile(file_id){
         let {encryption_key, cid} = file_shards[i];
         encryption_key = encryption_key.key;
         let encrypted_file = await retrieveFiles(WEB3_STORAGE_URL, cid);
-        let decrypted_file = await decryptShard(encrypted_file, encryption_key);
-        resolve(decrypted_file);
+        try {
+          let decrypted_file = await decryptShard(encrypted_file, encryption_key);
+          resolve(decrypted_file);
+        }
+        catch(err){
+          console.log({err});
+          reject(err);
+        }
       }));
     }
     let decrypted_shards = await Promise.all(promises);
