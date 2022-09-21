@@ -22,7 +22,6 @@ export async function retrieveFiles (token,cid) {
   // unpack File objects from the response
   const files = await res.files()
   let file = files[0];
-  console.log(file);
   return file;
 }
 

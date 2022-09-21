@@ -77,7 +77,7 @@ async function encryptBytes(plaintextbytes, {ivbytes, key, passphrase, pbkdf2sal
  * @param objFile - The file object that you want to encrypt.
  * @returns A blob object, the encryption key, and the encrypted name
  */
-export async function encryptFile(objFile, numShards) {
+export async function shardEncryptFile(objFile, numShards) {
 
 
 	//handle number of shards
