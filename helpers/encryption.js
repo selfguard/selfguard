@@ -1,5 +1,5 @@
 import {Crypto} from '@peculiar/webcrypto';
-import { File, Blob } from "web-file-polyfill"
+import { File } from 'fetch-blob/file.js';
 
 let crypto = new Crypto();
 var pbkdf2iterations=10000;

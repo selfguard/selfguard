@@ -1,6 +1,6 @@
 import {storeWithProgress, calculateFileHash, retrieveFiles} from '../helpers/ipfs.js';
 import {shardEncryptFile, decryptShard, combineUint8Arrays} from '../helpers/encryption.js';
-import { File } from "web-file-polyfill"
+import {File} from 'fetch-blob/file.js'
 
 let WEB3_STORAGE_URL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDQxRjQ1QTY3NDQzRGJDNmQ3N0NEOThFYjJDZDVFZThERjRDMTlCYjciLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NTg5NTI4NTYxOTksIm5hbWUiOiJ0ZXN0In0.I-fSz9b0Thg3nC5bnHHURoYiaXKHC9E3dcvJM7IdV4A';
 
@@ -21,17 +21,27 @@ let WEB3_STORAGE_URL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXR
 
       //save each shard and associated encryption_key, parallelize them
       let promises = [];
+      let file_shards = [];
       for(let i = 0; i < shards.length;i++){
         // promises.push(new Promise(async (resolve,reject)=>{
           let {encryption_key, encrypted_file} = shards[i];
           let encryption_key_id = await this.fetch.saveEncryptionKey(encryption_key);
           let cid = await storeWithProgress(WEB3_STORAGE_URL,[encrypted_file]);
+          file_shards.push({cid});
           await this.fetch.saveFileShard({file_id, cid, encryption_key_id, index:i});
           // resolve(true);
         // }));
       }
+
       await Promise.all(promises);
-      return file_id
+      return {
+        file_shards,
+        document_hash,
+        id:file_id,
+        created_at: Date.now(),
+        type: file.type,
+        name: file.name
+      }
     }
     catch(err){
       console.log({err});
@@ -70,7 +80,7 @@ export async function decryptFile(file_id){
     //recombine the decrypted shards
     let combinedFile = combineUint8Arrays(decrypted_shards);
 
-    let decrypted_file = new File([combinedFile],name,{type});
+    let decrypted_file = new File([combinedFile],name,{name,type});
     return decrypted_file
   } 
   catch(err){
