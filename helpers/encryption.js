@@ -193,14 +193,20 @@ function hexStringToUint8Array(hexString){
 }
 
 export function combineUint8Arrays(arrays){
-	let array = [];
-	for (let i = 0; i < arrays.length; i++) {
-		let arr = arrays[i];
-		for(let j = 0; j < arr.length; j++) {
-			array.push(arr[j])
+	try {
+		let array = [];
+		for (let i = 0; i < arrays.length; i++) {
+			let arr = arrays[i];
+			for(let j = 0; j < arr.length; j++) {
+				array.push(arr[j])
+			}
 		}
+		return new Uint8Array(array);
 	}
-  
-	return new Uint8Array(array);
+	catch (e) {
+		console.log(e);
+		throw new Error(e);
+	}
+
 };
 

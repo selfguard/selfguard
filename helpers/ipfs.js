@@ -1,9 +1,12 @@
-import { Web3Storage } from 'web3.storage';
-import {Crypto} from '@peculiar/webcrypto';
+import { Web3Storage } from "web3.storage";
+import { Crypto } from "@peculiar/webcrypto";
 let crypto = new Crypto();
+import axios from "axios";
+import { Blob } from "fetch-blob";
+import { File } from "fetch-blob/file.js";
 
-function makeStorageClient (token) {
-  return new Web3Storage({ token })
+function makeStorageClient(token) {
+  return new Web3Storage({ token });
 }
 
 /**
@@ -12,17 +15,23 @@ function makeStorageClient (token) {
  * @param cid - The CID of the file you want to retrieve.
  * @returns A file object
  */
-export async function retrieveFiles (token,cid) {
-  const client = makeStorageClient(token)
-  const res = await client.get(cid)
-
-  if (!res.ok) {
-    throw new Error(`failed to get ${cid} - [${res.status}] ${res.statusText}`)
+export async function retrieveFiles(token, cid, name, type) {
+  try {
+    let res = await axios.get(
+      `https://${cid}.ipfs.w3s.link/ipfs/${cid}/${name}`,
+      {
+        headers: {
+          Accept: type,
+        },
+        responseType: "arraybuffer",
+      }
+    );
+    let file = new Blob([res.data]);
+    return file;
   }
-  // unpack File objects from the response
-  const files = await res.files()
-  let file = files[0];
-  return file;
+  catch (e) {
+    throw new Error(`Failed to retrieve ${cid}`);
+  }
 }
 
 /**
@@ -30,12 +39,14 @@ export async function retrieveFiles (token,cid) {
  * @param file - The file to be hashed.
  * @returns A promise that resolves to a hex string.
  */
-export async function calculateFileHash(file){
-  return new Promise(async (resolve,reject)=>{
+export async function calculateFileHash(file) {
+  return new Promise(async (resolve, reject) => {
     let rawFileBytes = await file.arrayBuffer();
-    let hashBuffer = await crypto.subtle.digest('SHA-256',rawFileBytes);
+    let hashBuffer = await crypto.subtle.digest("SHA-256", rawFileBytes);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
+    const hashHex = hashArray
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join(""); // convert bytes to hex string
     resolve(hashHex);
   });
 }
@@ -47,22 +58,25 @@ export async function calculateFileHash(file){
  * @param files - an array of files to store
  * @returns A promise that resolves to the root cid of the file.
  */
-export async function storeWithProgress (token,files) {
-  return new Promise((resolve,reject)=>{
+export async function storeWithProgress(token, files, finishedSoFar, numShards, callback) {
+  return new Promise((resolve, reject) => {
+    let cid = null;
     // when each chunk is stored, update the percentage complete and display
-    const totalSize = files.map(f => f.size).reduce((a, b) => a + b, 0)
-    let uploaded = 0
+    const totalSize = files.map((f) => f.size).reduce((a, b) => a + b, 0);
+    let uploaded = 0;
 
     // show the root cid as soon as it's ready
-    const onRootCidReady = async (cid) => {
-      resolve(cid);
-    }
+    const onRootCidReady = async (c) => {
+      cid = c;
+    };
 
     const onStoredChunk = async (size) => {
-      uploaded += size
-      const pct = 100 * (uploaded / totalSize)
-    }
-    const client = makeStorageClient(token)
-    return client.put(files, { onRootCidReady, onStoredChunk })
+      uploaded += size;
+      const pct = (uploaded / totalSize);
+      if(pct >= 1) resolve(cid);
+      if(typeof callback === 'function') callback(null, Math.floor(100*(finishedSoFar + pct/numShards)));
+    };
+    const client = makeStorageClient(token);
+    return client.put(files, { onRootCidReady, onStoredChunk });
   });
 }

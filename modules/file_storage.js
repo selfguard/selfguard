@@ -10,7 +10,7 @@ let WEB3_STORAGE_URL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXR
   * @param numShards - The number of shards you want to split the file into.
   * @returns The file id associating all the shards is being returned.
   */
- export async function encryptFile(file, numShards){
+ export async function encryptFile(file, numShards, callback){
     try {
       // shard the file and encryp them
       let shards = await shardEncryptFile(file,numShards);
@@ -26,14 +26,13 @@ let WEB3_STORAGE_URL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXR
         // promises.push(new Promise(async (resolve,reject)=>{
           let {encryption_key, encrypted_file} = shards[i];
           let encryption_key_id = await this.fetch.saveEncryptionKey(encryption_key);
-          let cid = await storeWithProgress(WEB3_STORAGE_URL,[encrypted_file]);
+          let cid = await storeWithProgress(WEB3_STORAGE_URL,[encrypted_file], (i / shards.length), shards.length, callback);
           file_shards.push({cid});
           await this.fetch.saveFileShard({file_id, cid, encryption_key_id, index:i});
           // resolve(true);
         // }));
       }
 
-      await Promise.all(promises);
       return {
         file_shards,
         document_hash,
@@ -54,34 +53,41 @@ let WEB3_STORAGE_URL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXR
    * @param id - The id of the file you want to download
    * @returns A decrypted file
    */
-export async function decryptFile(file_id){
+export async function decryptFile(file_id, callback){
   try {
     let {file_shards, name, type} = await this.fetch.retrieveFile(file_id);
-
     //decrypt each shard
     let promises = [];
     for(let i = 0; i < file_shards.length;i++){
-      promises.push(new Promise(async (resolve,reject)=>{
-        let {encryption_key, cid} = file_shards[i];
-        encryption_key = encryption_key.key;
-        let encrypted_file = await retrieveFiles(WEB3_STORAGE_URL, cid);
+      // promises.push(new Promise(async (resolve,reject)=>{
         try {
-          let decrypted_file = await decryptShard(encrypted_file, encryption_key);
-          resolve(decrypted_file);
+          let {encryption_key, cid} = file_shards[i];
+          encryption_key = encryption_key.key;
+          let encrypted_file = await retrieveFiles(WEB3_STORAGE_URL, cid, name, type);
+          if(typeof callback === 'function') callback(null, Math.floor((i+1)/file_shards.length*100))
+          let decrypted_shard = await decryptShard(encrypted_file, encryption_key);
+          promises.push(decrypted_shard);
+          // resolve(decrypted_shard);
         }
         catch(err){
           console.log({err});
-          reject(err);
+          throw new Error(err);
+          // reject(err);
         }
-      }));
+      // }));
     }
-    let decrypted_shards = await Promise.all(promises);
-    
-    //recombine the decrypted shards
-    let combinedFile = combineUint8Arrays(decrypted_shards);
+    // let decrypted_shards = await Promise.all(promises);
+    let decrypted_shards = promises;
 
-    let decrypted_file = new File([combinedFile],name,{name,type});
-    return decrypted_file
+    try {
+      let file = new File(decrypted_shards,name,{name,type});
+      return file;
+    }
+    catch(err){
+      console.log({err});
+      throw err;
+    }
+
   } 
   catch(err){
     console.log({err});
