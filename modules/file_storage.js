@@ -110,3 +110,14 @@ export async function getFiles() {
   }
 }
 
+export async function getFileEncryptionKeys(file_id) {
+  try {
+    let {file_shards} = await this.fetch.retrieveFile(file_id);
+    return file_shards;
+  }
+  catch(err){
+    console.log({err});
+    throw new Error(err);
+  }
+}
+

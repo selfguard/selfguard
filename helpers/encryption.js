@@ -1,5 +1,6 @@
 import {Crypto} from '@peculiar/webcrypto';
 import { File } from 'fetch-blob/file.js';
+import QuickEncrypt from 'quick-encrypt';
 
 let crypto = new Crypto();
 var pbkdf2iterations=10000;
@@ -134,7 +135,7 @@ export async function encryptValue(value){
  * @param passphrase - The passphrase used to encrypt the data.
  * @returns The plaintext bytes.
  */
-async function decryptBytes(bytes, encryption_key){
+export async function decryptBytes(bytes, encryption_key){
 	var pbkdf2salt = bytes.slice(8,16);
 	let cipherbytes = bytes.slice(16);
 	let {key, ivbytes} = await extractKeyBytes(pbkdf2salt, encryption_key, 'decrypt');
@@ -168,6 +169,10 @@ export async function decryptValue(encrypted_value, encryption_key){
 	let plaintextbytes = await decryptBytes(bytes, encryption_key);
 	let text = new TextDecoder("utf-8").decode(plaintextbytes);
 	return text;
+}
+
+export function decryptWithPrivateKey(encryption_key, private_key){
+	return QuickEncrypt.decrypt(encryption_key, private_key);
 }
 
 /**
