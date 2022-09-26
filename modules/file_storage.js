@@ -1,5 +1,5 @@
 import {storeWithProgress, calculateFileHash, retrieveFiles} from '../helpers/ipfs.js';
-import {shardEncryptFile, decryptShard, combineUint8Arrays} from '../helpers/encryption.js';
+import {shardEncryptFile, decryptShard} from '../helpers/encryption.js';
 import {File} from 'fetch-blob/file.js'
 
 let WEB3_STORAGE_URL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDQxRjQ1QTY3NDQzRGJDNmQ3N0NEOThFYjJDZDVFZThERjRDMTlCYjciLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NTg5NTI4NTYxOTksIm5hbWUiOiJ0ZXN0In0.I-fSz9b0Thg3nC5bnHHURoYiaXKHC9E3dcvJM7IdV4A';

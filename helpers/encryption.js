@@ -73,24 +73,13 @@ async function encryptBytes(plaintextbytes, {ivbytes, key, passphrase, pbkdf2sal
 	return null;
 }
 
-/**
- * It takes a file, encrypts it, and returns the encrypted file and the encryption key
- * @param objFile - The file object that you want to encrypt.
- * @returns A blob object, the encryption key, and the encrypted name
- */
-export async function shardEncryptFile(objFile, numShards) {
-
-
+export async function shardEncryptBytes(bytes, numShards){
 	//handle number of shards
 	if(!numShards || isNaN(numShards)) numShards = 1;
 	if(parseInt(numShards) > 10) numShards = 10;
-	
-	//read in file
-	let rawFileBytes = await objFile.arrayBuffer();
-
 
 	//calculat the length of each shard
-	let shardLength = Math.min(rawFileBytes.byteLength / numShards);
+	let shardLength = Math.min(bytes.byteLength / numShards);
 
 	//split into shards
 	let shards = [];
@@ -100,17 +89,37 @@ export async function shardEncryptFile(objFile, numShards) {
 		let start = i * shardLength;
 
 		//if we are at the last shard, ensure its length goes until the end of the array
-		let end = i <= numShards - 1 ? start + shardLength : rawFileBytes.byteLength;
-		let shardBytes = rawFileBytes.slice(start, end);
+		let end = i <= numShards - 1 ? start + shardLength : bytes.byteLength;
+		let shardBytes = bytes.slice(start, end);
 		
 		//encrypt shard
 		let keys = await generateEncryptionKey();
 		let encrypted_shard_bytes = await encryptBytes(shardBytes, keys); 
-		var encrypted_file = new File([encrypted_shard_bytes], objFile.name, {type: objFile.type});
-
-		shards.push({encrypted_file, encryption_key: keys.passphrase});
+		shards.push({encrypted_shard_bytes, encryption_key: keys.passphrase});
 	}
 	return shards;
+}
+
+/**
+ * It takes a file, encrypts it, and returns the encrypted file and the encryption key
+ * @param objFile - The file object that you want to encrypt.
+ * @returns A blob object, the encryption key, and the encrypted name
+ */
+export async function shardEncryptFile(objFile, numShards) {
+
+	//read in file
+	let rawFileBytes = await objFile.arrayBuffer();
+
+	//shard encrypt the file
+	let shards = await shardEncryptBytes(rawFileBytes, numShards);
+
+	//convert each shard into a file
+	for(let i = 0; i < shards.length; i++) {
+		shards[i].encrypted_file  = new File([shards[i].encrypted_shard_bytes], objFile.name, {type: objFile.type});
+	}
+
+	//shard the bytes and encrypt them
+	return await shardEncryptBytes(rawFileBytes, numShards);
 }
 
 /**
@@ -196,22 +205,3 @@ function hexStringToUint8Array(hexString){
 
   return arrayBuffer;
 }
-
-export function combineUint8Arrays(arrays){
-	try {
-		let array = [];
-		for (let i = 0; i < arrays.length; i++) {
-			let arr = arrays[i];
-			for(let j = 0; j < arr.length; j++) {
-				array.push(arr[j])
-			}
-		}
-		return new Uint8Array(array);
-	}
-	catch (e) {
-		console.log(e);
-		throw new Error(e);
-	}
-
-};
-
