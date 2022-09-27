@@ -1,5 +1,6 @@
 import {Crypto} from '@peculiar/webcrypto';
 import { File } from 'fetch-blob/file.js';
+import { generateChunks } from './stream_files.js';
 import QuickEncrypt from 'quick-encrypt';
 
 let crypto = new Crypto();
@@ -53,19 +54,20 @@ async function generateEncryptionKey(){
  * @param plaintextbytes - The bytes of the plaintext to be encrypted.
  * @returns The encrypted bytes.
  */
-async function encryptBytes(plaintextbytes, {ivbytes, key, passphrase, pbkdf2salt}){
+export async function encryptBytes(plaintextbytes){
 	try {
+		let {ivbytes, key, passphrase, pbkdf2salt} = await generateEncryptionKey();
 		var cipherbytes= await crypto.subtle.encrypt({name: "AES-CBC", iv: ivbytes}, key, plaintextbytes).catch(function(err){});
 
 		if(!cipherbytes) return;
 
 		cipherbytes = new Uint8Array(cipherbytes);
-		var resultbytes=new Uint8Array(cipherbytes.length+16)
-		resultbytes.set(new TextEncoder("utf-8").encode('Salted__'));
-		resultbytes.set(pbkdf2salt, 8);
-		resultbytes.set(cipherbytes, 16);
+		var encrypted_bytes = new Uint8Array(cipherbytes.length+16)
+		encrypted_bytes.set(new TextEncoder("utf-8").encode('Salted__'));
+		encrypted_bytes.set(pbkdf2salt, 8);
+		encrypted_bytes.set(cipherbytes, 16);
 
-		return resultbytes;
+		return {encrypted_bytes, encryption_key: passphrase}
 	}
 	catch(err){
 		console.log({err});
@@ -93,9 +95,8 @@ export async function shardEncryptBytes(bytes, numShards){
 		let shardBytes = bytes.slice(start, end);
 		
 		//encrypt shard
-		let keys = await generateEncryptionKey();
-		let encrypted_shard_bytes = await encryptBytes(shardBytes, keys); 
-		shards.push({encrypted_shard_bytes, encryption_key: keys.passphrase});
+		let {encryption_key, encrypted_bytes} = await encryptBytes(shardBytes); 
+		shards.push({encrypted_shard_bytes:encrypted_bytes, encryption_key});
 	}
 	return shards;
 }
@@ -128,13 +129,14 @@ export async function shardEncryptFile(objFile, numShards) {
  * @returns An object with two properties: encrypted_value and encryption_key.
  */
 export async function encryptValue(value){
+	//convert string to bytes
 	let plaintextbytes = new TextEncoder('utf-8').encode(value);
 
-	let keys = await generateEncryptionKey();
-	let resultbytes = await encryptBytes(plaintextbytes,keys);
+	//encrypt the bytes
+	let {encryption_key, encrypted_bytes} = await encryptBytes(plaintextbytes); 
 
-	let ciphertext = Buffer.from(resultbytes).toString('hex');
-	return {ciphertext, encryption_key: keys.passphrase};
+	let ciphertext = Buffer.from(encrypted_bytes).toString('hex');
+	return {ciphertext, encryption_key};
 }
 
 /**
@@ -204,4 +206,15 @@ function hexStringToUint8Array(hexString){
   }
 
   return arrayBuffer;
+}
+
+export async function streamEncrypt(path,chunk_size, chunk_function){
+	for await( const chunk of generateChunks(path, chunk_size)) {
+		//encrypt the chunk
+		let {encryption_key, encrypted_bytes} = await encryptBytes(chunk);
+
+		//run the chunk function on the data
+		await chunk_function(encrypted_bytes, encryption_key);
+	}
+	return;
 }
