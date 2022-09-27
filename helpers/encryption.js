@@ -1,6 +1,5 @@
 import {Crypto} from '@peculiar/webcrypto';
-import { File } from 'fetch-blob/file.js';
-import { generateChunks } from './stream_files.js';
+import { generateChunks, generateFileBufferSlices } from './stream_files.js';
 import QuickEncrypt from 'quick-encrypt';
 
 let crypto = new Crypto();
@@ -75,54 +74,6 @@ export async function encryptBytes(plaintextbytes){
 	return null;
 }
 
-export async function shardEncryptBytes(bytes, numShards){
-	//handle number of shards
-	if(!numShards || isNaN(numShards)) numShards = 1;
-	if(parseInt(numShards) > 10) numShards = 10;
-
-	//calculat the length of each shard
-	let shardLength = Math.min(bytes.byteLength / numShards);
-
-	//split into shards
-	let shards = [];
-	
-	for(let i = 0; i < numShards; i++) {
-		//build shard
-		let start = i * shardLength;
-
-		//if we are at the last shard, ensure its length goes until the end of the array
-		let end = i <= numShards - 1 ? start + shardLength : bytes.byteLength;
-		let shardBytes = bytes.slice(start, end);
-		
-		//encrypt shard
-		let {encryption_key, encrypted_bytes} = await encryptBytes(shardBytes); 
-		shards.push({encrypted_shard_bytes:encrypted_bytes, encryption_key});
-	}
-	return shards;
-}
-
-/**
- * It takes a file, encrypts it, and returns the encrypted file and the encryption key
- * @param objFile - The file object that you want to encrypt.
- * @returns A blob object, the encryption key, and the encrypted name
- */
-export async function shardEncryptFile(objFile, numShards) {
-
-	//read in file
-	let rawFileBytes = await objFile.arrayBuffer();
-
-	//shard encrypt the file
-	let shards = await shardEncryptBytes(rawFileBytes, numShards);
-
-	//convert each shard into a file
-	for(let i = 0; i < shards.length; i++) {
-		shards[i].encrypted_file  = new File([shards[i].encrypted_shard_bytes], objFile.name, {type: objFile.type});
-	}
-
-	//shard the bytes and encrypt them
-	return await shardEncryptBytes(rawFileBytes, numShards);
-}
-
 /**
  * It takes a value, encrypts it, and returns the encrypted value and the encryption key
  * @param value - The value to be encrypted.
@@ -166,7 +117,6 @@ export async function decryptShard(objFile, encryption_key) {
 	let decrypted_bytes = await decryptBytes(bytes, encryption_key);
 	return decrypted_bytes;
 }
-
 
 /**
  * It takes an encrypted value and an encryption key, decrypts the value, and returns the decrypted
@@ -212,6 +162,21 @@ export async function streamEncrypt(path,chunk_size, chunk_function){
 	for await( const chunk of generateChunks(path, chunk_size)) {
 		//encrypt the chunk
 		let {encryption_key, encrypted_bytes} = await encryptBytes(chunk);
+
+		//run the chunk function on the data
+		await chunk_function(encrypted_bytes, encryption_key);
+	}
+	return;
+}
+
+export async function streamEncryptWeb(file, chunk_function){
+	//minimum 5 chunks for the file, if the file is over 300MB, set each chunk to 100MB.  
+	let chunk_size = file.size > 500*1000*1000 ? 100*1000*1000 : file.size/5;
+	if(file.size <= 5) chunk_size = file.size;
+
+	for await(const slice of generateFileBufferSlices(file, chunk_size)) {
+		//encrypt shard
+		let {encryption_key, encrypted_bytes} = await encryptBytes(slice); 
 
 		//run the chunk function on the data
 		await chunk_function(encrypted_bytes, encryption_key);

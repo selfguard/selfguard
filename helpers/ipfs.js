@@ -58,7 +58,7 @@ export async function calculateFileHash(file) {
  * @param files - an array of files to store
  * @returns A promise that resolves to the root cid of the file.
  */
-export async function storeWithProgress(token, files, finishedSoFar, numShards, callback) {
+export async function storeWithProgress(token, files, finishedSoFar, fileSize, callback) {
   return new Promise((resolve, reject) => {
     let cid = null;
     // when each chunk is stored, update the percentage complete and display
@@ -72,9 +72,9 @@ export async function storeWithProgress(token, files, finishedSoFar, numShards, 
 
     const onStoredChunk = async (size) => {
       uploaded += size;
+      if(typeof callback === 'function') callback(null, Math.floor(100*(finishedSoFar + uploaded/fileSize)));
       const pct = (uploaded / totalSize);
       if(pct >= 1) resolve(cid);
-      if(typeof callback === 'function') callback(null, Math.floor(100*(finishedSoFar + pct/numShards)));
     };
     const client = makeStorageClient(token);
     return client.put(files, { onRootCidReady, onStoredChunk });

@@ -30,8 +30,8 @@ export default class Fetch {
     return result.data
   }
 
-  async saveFileShard({file_id, cid, encryption_key_id, index}){
-    let result = await axios.post(this.url + "/saveFileShard",{data:{api_key:this.api_key, file_id, cid, encryption_key_id, index}});
+  async saveFileShard({file_id, cid, encryption_key_id, index, name}){
+    let result = await axios.post(this.url + "/saveFileShard",{data:{api_key:this.api_key, file_id, cid, encryption_key_id, index, name}});
     return result.data
   }
 
