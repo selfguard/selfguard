@@ -1,6 +1,5 @@
 import {Crypto} from '@peculiar/webcrypto';
-import { generateFileBufferSlices } from './stream_files.js';
-// import { generateChunks } from './stream_files.js';
+import { generateChunks, generateFileBufferSlices } from './stream_files.js';
 import QuickEncrypt from 'quick-encrypt';
 
 let crypto = new Crypto();
@@ -159,16 +158,16 @@ function hexStringToUint8Array(hexString){
   return arrayBuffer;
 }
 
-// export async function streamEncrypt(path,chunk_size, chunk_function){
-// 	for await( const chunk of generateChunks(path, chunk_size)) {
-// 		//encrypt the chunk
-// 		let {encryption_key, encrypted_bytes} = await encryptBytes(chunk);
+export async function streamEncrypt(path,chunk_size, chunk_function){
+	for await( const chunk of generateChunks(path, chunk_size)) {
+		//encrypt the chunk
+		let {encryption_key, encrypted_bytes} = await encryptBytes(chunk);
 
-// 		//run the chunk function on the data
-// 		await chunk_function(encrypted_bytes, encryption_key);
-// 	}
-// 	return;
-// }
+		//run the chunk function on the data
+		await chunk_function(encrypted_bytes, encryption_key);
+	}
+	return;
+}
 
 export async function streamEncryptWeb(file, chunk_function){
 	//minimum 5 chunks for the file, if the file is over 300MB, set each chunk to 100MB.  
