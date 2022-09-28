@@ -3,7 +3,6 @@ import { Crypto } from "@peculiar/webcrypto";
 let crypto = new Crypto();
 import axios from "axios";
 import { Blob } from "fetch-blob";
-import { File } from "fetch-blob/file.js";
 
 function makeStorageClient(token) {
   return new Web3Storage({ token });
@@ -15,8 +14,8 @@ function makeStorageClient(token) {
  * @param cid - The CID of the file you want to retrieve.
  * @returns A file object
  */
-export async function retrieveFiles(token, cid, name, type) {
-  try {
+export async function retrieveIPFSFile(cid, name, type) {
+  let retrieve = async () => {
     let res = await axios.get(
       `https://${cid}.ipfs.w3s.link/ipfs/${cid}/${name}`,
       {
@@ -29,8 +28,24 @@ export async function retrieveFiles(token, cid, name, type) {
     let file = new Blob([res.data]);
     return file;
   }
+  try {
+    return await retrieve();
+  }
   catch (e) {
-    throw new Error(`Failed to retrieve ${cid}`);
+    //if it fails once try again
+    try {
+      console.log(`Failed to retrieve ${cid}, trying 2/3...`)
+      return await retrieve();
+    }
+    catch(e){
+      try {
+        console.log(`Failed to retrieve ${cid}, trying 3/3...`)
+        return await retrieve();
+      }
+      catch(e){
+        throw new Error(`Failed to retrieve ${cid}`);
+      }
+    }
   }
 }
 

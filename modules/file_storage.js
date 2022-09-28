@@ -1,6 +1,7 @@
-import {storeWithProgress, calculateFileHash, retrieveFiles} from '../helpers/ipfs.js';
+import {storeWithProgress, calculateFileHash, retrieveIPFSFile} from '../helpers/ipfs.js';
 import {decryptShard, streamEncryptWeb} from '../helpers/encryption.js';
 import {File} from 'fetch-blob/file.js'
+import { v4 as uuidv4 } from 'uuid';
 
 let WEB3_STORAGE_URL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDQxRjQ1QTY3NDQzRGJDNmQ3N0NEOThFYjJDZDVFZThERjRDMTlCYjciLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NTg5NTI4NTYxOTksIm5hbWUiOiJ0ZXN0In0.I-fSz9b0Thg3nC5bnHHURoYiaXKHC9E3dcvJM7IdV4A';
 
@@ -11,29 +12,30 @@ let WEB3_STORAGE_URL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXR
   */
  export async function encryptFile(file, callback){
     try {
+      let file_id = uuidv4();
+
+      if(file.size > 500*1000*1000) throw new Error('File size must be less than 500 MB');
       //save file assocation for each shard
       let document_hash = await calculateFileHash(file);
-      let file_id = await this.fetch.saveFileAssociation({name:file.name, type:file.type, document_hash})
 
       let file_shards = [];
       //iterate through each file chunk that has been encrypted
       let i = 0;
       let size_so_far = 0;
       await streamEncryptWeb(file, async (encrypted_bytes, encryption_key)=>{
-         // save the encryption key with SelfGuard
-        let encryption_key_id = await this.fetch.saveEncryptionKey(encryption_key);
+         // create the encryption key id
+        let encryption_key_id = uuidv4();
 
-        //save the file to ipfs
+        // //save the file to ipfs
         let encrypted_file = new File([encrypted_bytes],file.name,{type:file.type});
         let cid = await storeWithProgress(WEB3_STORAGE_URL,[encrypted_file], size_so_far/file.size, file.size, callback);
 
-        //save the file shard assocation with SelfGuard
-        await this.fetch.saveFileShard({file_id, cid, encryption_key_id, index:i, name:file.name});
-
+        // //save the file shard assocation with SelfGuard
         size_so_far+=encrypted_bytes.byteLength;
-        file_shards.push({cid});
+        file_shards.push({cid, index:i, encryption_key:{key: encryption_key, id:encryption_key_id}});
         i++;
       })
+      await this.fetch.saveFileAssociation({id:file_id,name:file.name, type:file.type, document_hash, file_shards})
 
       return {
         file_shards,
@@ -64,7 +66,7 @@ export async function decryptFile(file_id, callback){
         try {
           let {encryption_key, cid} = file_shards[i];
           encryption_key = encryption_key.key;
-          let encrypted_file = await retrieveFiles(WEB3_STORAGE_URL, cid, name, type);
+          let encrypted_file = await retrieveIPFSFile(cid, name, type);
           if(typeof callback === 'function') callback(null, Math.floor((i+1)/file_shards.length*100))
           let decrypted_shard = await decryptShard(encrypted_file, encryption_key);
           decrypted_shards.push(decrypted_shard);

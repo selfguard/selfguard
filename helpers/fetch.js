@@ -25,8 +25,17 @@ export default class Fetch {
   }
 
   //File Storage
-  async saveFileAssociation({name, type, document_hash})  {
-    let result = await axios.post(this.url + "/saveFileAssociation",{data:{api_key:this.api_key, name, type, document_hash}});
+  async saveFileAssociation({id, name, type, document_hash, file_shards})  {
+    let pub_key = this.pub_key;
+
+    if(pub_key) {
+      file_shards = file_shards.map((f)=>{
+        f.encryption_key.key = QuickEncrypt.encrypt(f.encryption_key.key, pub_key) // wrap with public key
+        return f;
+      });
+    }
+
+    let result = await axios.post(this.url + "/saveFileAssociation",{data:{api_key:this.api_key,id, name, type, document_hash, file_shards}});
     return result.data
   }
 
@@ -41,7 +50,6 @@ export default class Fetch {
     if(result && result.data){
       result.data.file_shards = result.data.file_shards.map((shard)=>{
         if(private_key) {
-          let key = QuickEncrypt.decrypt(shard.encryption_key.key, private_key);
           shard.encryption_key.key = QuickEncrypt.decrypt(shard.encryption_key.key, private_key) // unwrap with private key
         }
         return shard;
