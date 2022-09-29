@@ -14,7 +14,7 @@ function makeStorageClient(token) {
  * @param cid - The CID of the file you want to retrieve.
  * @returns A file object
  */
-export async function retrieveIPFSFile(cid, name, type) {
+ export async function retrieveIPFSFile(cid, name, type) {
   let retrieve = async () => {
     let res = await axios.get(
       `https://${cid}.ipfs.w3s.link/ipfs/${cid}/${name}`,
@@ -73,21 +73,23 @@ export async function calculateFileHash(file) {
  * @param files - an array of files to store
  * @returns A promise that resolves to the root cid of the file.
  */
-export async function storeWithProgress(token, files, finishedSoFar, fileSize, callback) {
+ export async function storeWithProgress(token, files, finishedSoFar, fileSize, chunkLength, callback) {
   return new Promise((resolve, reject) => {
     let cid = null;
     // when each chunk is stored, update the percentage complete and display
     const totalSize = files.map((f) => f.size).reduce((a, b) => a + b, 0);
     let uploaded = 0;
 
+    let ratio = chunkLength / totalSize;
     // show the root cid as soon as it's ready
     const onRootCidReady = async (c) => {
       cid = c;
     };
 
     const onStoredChunk = async (size) => {
-      uploaded += size;
-      if(typeof callback === 'function') callback(null, Math.floor(100*(finishedSoFar + uploaded/fileSize)));
+      uploaded+= size
+      if(uploaded > totalSize) uploaded = totalSize;
+      if(typeof callback === 'function') callback(null, (100*(finishedSoFar + ((uploaded*ratio)/fileSize)).toFixed(2)))
       const pct = (uploaded / totalSize);
       if(pct >= 1) resolve(cid);
     };

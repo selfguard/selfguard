@@ -19,19 +19,20 @@ let WEB3_STORAGE_URL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXR
       let document_hash = await calculateFileHash(file);
 
       let file_shards = [];
+      let totalSize = file.size;
       //iterate through each file chunk that has been encrypted
       let i = 0;
       let size_so_far = 0;
-      await streamEncryptWeb(file, async (encrypted_bytes, encryption_key)=>{
+      await streamEncryptWeb(file, async (encrypted_bytes, encryption_key, chunkLength)=>{
          // create the encryption key id
         let encryption_key_id = uuidv4();
 
         // //save the file to ipfs
         let encrypted_file = new File([encrypted_bytes],file.name,{type:file.type});
-        let cid = await storeWithProgress(WEB3_STORAGE_URL,[encrypted_file], size_so_far/file.size, file.size, callback);
 
+        let cid = await storeWithProgress(WEB3_STORAGE_URL,[encrypted_file], size_so_far/totalSize, totalSize, chunkLength, callback);
         // //save the file shard assocation with SelfGuard
-        size_so_far+=encrypted_bytes.byteLength;
+        size_so_far+=chunkLength;
         file_shards.push({cid, index:i, encryption_key:{key: encryption_key, id:encryption_key_id}});
         i++;
       })
