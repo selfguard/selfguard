@@ -35,12 +35,12 @@ export async function get(key) {
     try {
         let {encryption_key_id, ciphertext} = await this.fetch.retrieveKeyValueData({key});
         let value = await this.decrypt(ciphertext, encryption_key_id);
+        return value;
     }
     catch(err){
         console.log({err})
         throw new Error(err);
     }
-    return true;
 }
 
 /**
