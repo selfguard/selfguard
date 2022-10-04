@@ -1,6 +1,6 @@
 {
   "name": "selfguard-client",
-  "version": "1.1.43",
+  "version": "1.1.44",
   "description": "Universal API For Encryption",
   "main": "index.js",
   "author": "Arjun Raj Jain",
