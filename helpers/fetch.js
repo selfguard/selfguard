@@ -26,7 +26,7 @@ export default class Fetch {
     let result = await axios.post(this.url + "/retrieveEncryptionKey",{data:{id, api_key:this.api_key}});
     let {key, public_key} = result.data.encryption_keys[0];
 
-    if(public_key === pub_key) key = QuickEncrypt.decrypt(key, this.private_key) // unwrap with private key
+    if(public_key === pub_key && pub_key != null) key = QuickEncrypt.decrypt(key, this.private_key) // unwrap with private key
     return key;
   }
 
