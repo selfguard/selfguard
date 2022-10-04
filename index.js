@@ -45,8 +45,8 @@ export default class SelfGuard {
   }
 
   //File Storage Methods
-  async encryptFile(file, numShards, callback){
-    return await encryptFile.call(this, file, numShards, callback);
+  async encryptFile(file, callback){
+    return await encryptFile.call(this, file, callback);
   }
 
   async decryptFile(file_id, callback){

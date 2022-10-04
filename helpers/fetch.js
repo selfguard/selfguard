@@ -12,35 +12,36 @@ export default class Fetch {
 
   // Encryption Keys
   async saveEncryptionKey(encryption_key){
-    if(this.pub_key) encryption_key = QuickEncrypt.encrypt(encryption_key, this.pub_key) // wrap with public key
-    let result = await axios.post(this.url + "/saveEncryptionKey",{data:{key:encryption_key, api_key:this.api_key}});
+    let public_key = this.pub_key;
+
+    if(public_key) encryption_key = QuickEncrypt.encrypt(encryption_key, this.pub_key) // wrap with public key
+
+    let result = await axios.post(this.url + "/saveEncryptionKey",{data:{public_key, key:encryption_key, api_key:this.api_key}});
     return result.data;
   }
 
   async retrieveEncryptionKey(id){
+    let pub_key = this.pub_key;
+
     let result = await axios.post(this.url + "/retrieveEncryptionKey",{data:{id, api_key:this.api_key}});
-    let encryption_key = result.data;
-    if(this.pub_key) encryption_key = QuickEncrypt.decrypt(encryption_key, this.private_key) // unwrap with private key
-    return encryption_key;
+    let {key, public_key} = result.data.encryption_keys[0];
+
+    if(public_key === pub_key) key = QuickEncrypt.decrypt(key, this.private_key) // unwrap with private key
+    return key;
   }
 
   //File Storage
   async saveFileAssociation({id, name, type, document_hash, file_shards})  {
-    let pub_key = this.pub_key;
+    let public_key = this.pub_key;
 
-    if(pub_key) {
+    if(public_key) {
       file_shards = file_shards.map((f)=>{
-        f.encryption_key.key = QuickEncrypt.encrypt(f.encryption_key.key, pub_key) // wrap with public key
+        f.encryption_key.key = QuickEncrypt.encrypt(f.encryption_key.key, public_key) // wrap with public key
         return f;
       });
     }
 
-    let result = await axios.post(this.url + "/saveFileAssociation",{data:{api_key:this.api_key,id, name, type, document_hash, file_shards}});
-    return result.data
-  }
-
-  async saveFileShard({file_id, cid, encryption_key_id, index, name}){
-    let result = await axios.post(this.url + "/saveFileShard",{data:{api_key:this.api_key, file_id, cid, encryption_key_id, index, name}});
+    let result = await axios.post(this.url + "/saveFileAssociation",{data:{public_key, api_key:this.api_key,id, name, type, document_hash, file_shards}});
     return result.data
   }
 
@@ -50,7 +51,7 @@ export default class Fetch {
     if(result && result.data){
       result.data.file_shards = result.data.file_shards.map((shard)=>{
         if(private_key) {
-          shard.encryption_key.key = QuickEncrypt.decrypt(shard.encryption_key.key, private_key) // unwrap with private key
+          shard.encryption_key = QuickEncrypt.decrypt(shard.encryption_key, private_key) // unwrap with private key
         }
         return shard;
       });
