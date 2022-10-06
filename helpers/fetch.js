@@ -1,5 +1,6 @@
 import axios from "axios";
 import QuickEncrypt from 'quick-encrypt';
+import {encryptData, decryptData, getPublicKey} from "./metamask";
 
 export default class Fetch {
 
@@ -10,52 +11,70 @@ export default class Fetch {
     this.private_key = private_key; //optional
   }
 
+  //Asymmetric Encryption Functions
+  async asymmetricEncryption(data, metamaskKey){
+    if(this.pub_key && this.pub_key != 'metamask') {
+      data = QuickEncrypt.encrypt(encryption_key, this.pub_key) // wrap with public key
+    }
+    else if(this.pub_key === 'metamask') {
+      if(!metamaskKey) metamaskKey = await getPublicKey();
+      return await encryptData(data, metamaskKey);
+    }
+    return {ciphertext:data, metamask_address:null};
+  }
+  
+  async asymmetricDecryption(public_key, metamask_address, data){
+    if(public_key === this.pub_key && public_key != null && this.pub_key != 'metamask') {
+      data = QuickEncrypt.decrypt(key, this.private_key) // unwrap with private key
+    }
+    else if(public_key === this.pub_key && this.pub_key === 'metamask') {
+      data = await decryptData(metamask_address, data);
+    }
+    if(public_key && this.pub_key !== public_key){
+      throw new Error("Public key mismatch for decryption")
+    }
+    return data;
+  }
+
   // Encryption Keys
   async saveEncryptionKey(encryption_key){
-    let public_key = this.pub_key;
 
-    if(public_key) encryption_key = QuickEncrypt.encrypt(encryption_key, this.pub_key) // wrap with public key
-
-    let result = await axios.post(this.url + "/saveEncryptionKey",{data:{public_key, key:encryption_key, api_key:this.api_key}});
+    let {ciphertext, metamask_address} = await this.asymmetricEncryption(encryption_key);
+    
+    let result = await axios.post(this.url + "/saveEncryptionKey",{data:{public_key:this.pub_key, metamask_address, key:ciphertext, api_key:this.api_key}});
     return result.data;
   }
 
   async retrieveEncryptionKey(id){
-    let pub_key = this.pub_key;
 
     let result = await axios.post(this.url + "/retrieveEncryptionKey",{data:{id, api_key:this.api_key}});
-    let {key, public_key} = result.data.encryption_keys[0];
+    let {key, public_key, metamask_address} = result.data.encryption_keys[0];
 
-    if(public_key === pub_key && pub_key != null) key = QuickEncrypt.decrypt(key, this.private_key) // unwrap with private key
+    key = await this.asymmetricDecryption(public_key, metamask_address, key);
+
     return key;
   }
 
   //File Storage
   async saveFileAssociation({id, name, type, document_hash, file_shards})  {
-    let public_key = this.pub_key;
+    let metamaskKey = await getPublicKey();
+    file_shards = await Promise.all(file_shards.map(async (f)=>{
+      let {ciphertext, metamask_address} = await this.asymmetricEncryption(f.encryption_key.key,metamaskKey);
+      f.encryption_key.key = ciphertext;
+      f.encryption_key.metamask_address = metamask_address;
+      return f;
+    }));
 
-    if(public_key) {
-      file_shards = file_shards.map((f)=>{
-        f.encryption_key.key = QuickEncrypt.encrypt(f.encryption_key.key, public_key) // wrap with public key
-        return f;
-      });
-    }
-
-    let result = await axios.post(this.url + "/saveFileAssociation",{data:{public_key, api_key:this.api_key,id, name, type, document_hash, file_shards}});
+    let result = await axios.post(this.url + "/saveFileAssociation",{data:{public_key:this.pub_key, api_key:this.api_key,id, name, type, document_hash, file_shards}});
     return result.data
   }
 
   async retrieveFile(id){
     let result = await axios.post(this.url + "/retrieveFile",{data:{api_key:this.api_key, id}});
-    let private_key = this.private_key;
-    if(result && result.data){
-      result.data.file_shards = result.data.file_shards.map((shard)=>{
-        if(private_key) {
-          shard.encryption_key = QuickEncrypt.decrypt(shard.encryption_key, private_key) // unwrap with private key
-        }
-        return shard;
-      });
-    }
+    result.data.file_shards = await Promise.all(result.data.file_shards.map(async (shard)=>{
+      shard.encryption_key = await this.asymmetricDecryption(shard.public_key, shard.metamask_address, shard.encryption_key);
+      return shard;
+    }));
     return result.data
   }
 
