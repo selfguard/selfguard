@@ -13,8 +13,8 @@ export default class Fetch {
 
   //Asymmetric Encryption Functions
   async asymmetricEncryption(data, metamaskKey){
-    if(this.pub_key && this.pub_key != 'metamask') {
-      data = QuickEncrypt.encrypt(encryption_key, this.pub_key) // wrap with public key
+    if(this.pub_key && this.pub_key !== 'metamask') {
+      data = QuickEncrypt.encrypt(data, this.pub_key) // wrap with public key
     }
     else if(this.pub_key === 'metamask') {
       if(!metamaskKey) metamaskKey = await getPublicKey();
@@ -25,7 +25,7 @@ export default class Fetch {
   
   async asymmetricDecryption(public_key, metamask_address, data){
     if(public_key === this.pub_key && public_key != null && this.pub_key != 'metamask') {
-      data = QuickEncrypt.decrypt(key, this.private_key) // unwrap with private key
+      data = QuickEncrypt.decrypt(data, this.private_key) // unwrap with private key
     }
     else if(public_key === this.pub_key && this.pub_key === 'metamask') {
       data = await decryptData(metamask_address, data);
@@ -57,7 +57,8 @@ export default class Fetch {
 
   //File Storage
   async saveFileAssociation({id, name, type, document_hash, file_shards})  {
-    let metamaskKey = await getPublicKey();
+    let metamaskKey = this.pub_key === 'metamask' ? await getPublicKey() : null;
+
     file_shards = await Promise.all(file_shards.map(async (f)=>{
       let {ciphertext, metamask_address} = await this.asymmetricEncryption(f.encryption_key.key,metamaskKey);
       f.encryption_key.key = ciphertext;

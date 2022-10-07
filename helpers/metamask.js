@@ -17,10 +17,8 @@ export async function getPublicKey(){
 
 export async function encryptData(data, {publicKey,account}) {
   try {
-    console.log({publicKey,account});
     if(!publicKey) {
       obj = await getPublicKey();
-      console.log({obj});
       publicKey = obj.publicKey;
       account = obcj.account;
     }
@@ -50,6 +48,10 @@ export async function encryptData(data, {publicKey,account}) {
 
 export async function decryptData(account, data) {
   try{
+    const accounts = await window.ethereum.request({
+      method: 'eth_requestAccounts'
+    });
+
     data = Buffer.from(data,"hex");
     // Reconstructing the original object outputed by encryption
     const structuredData = {
@@ -71,6 +73,6 @@ export async function decryptData(account, data) {
   }
   catch(err) {
     console.log(err);
-    throw new Error(err);
+    throw new Error(err.message);
   }
 }
