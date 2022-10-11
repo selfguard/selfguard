@@ -16,6 +16,9 @@ function makeStorageClient(token) {
  */
  export async function retrieveIPFSFile(cid, name, type) {
   let retrieve = async () => {
+    axios.defaults.headers.common = {
+      // "X-API-Key": this.api_key
+    };
     let res = await axios.get(
       `https://${cid}.ipfs.w3s.link/ipfs/${cid}/${name}`,
       {
