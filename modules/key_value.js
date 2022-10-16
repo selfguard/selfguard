@@ -6,21 +6,11 @@
 */
 export async function put(key, value) {
     try {
-        //if key exists, update it
-        let value2 = await this.get(key);
         let {encryption_key_id, ciphertext} = await this.encrypt(value);
         await this.fetch.updateKeyValueData({key, ciphertext, encryption_key_id});
     }
     catch(err){
-        //else create the new key value
-        try {
-            let {encryption_key_id, ciphertext} = await this.encrypt(value);
-            await this.fetch.saveKeyValueData({key, ciphertext, encryption_key_id});
-        }
-        catch(err){
-            console.log({err})
-            throw new Error(err);
-        }
+        console.log({err});
     }
     return true;
 }

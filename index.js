@@ -11,7 +11,7 @@ import {initArray, addUserToArray, addToArray, getArray, getArrayNames, getMyEnc
 //Key Value Functions
 import {get, put, getKeys} from './modules/key_value.js';
 //Notification Functions
-import {sendEmail, sendSMS} from './modules/notifications.js';
+import {sendEmail, sendSMS, updateProfile, getProfiles, getProfile} from './modules/notifications.js';
 //Event Functions
 import {retrieveEvents} from './modules/events.js';
 
@@ -129,6 +129,18 @@ export default class SelfGuard {
 
   async sendSMS({address, text}){
     return await sendSMS.call(this, {address, text});
+  }
+
+  async updateProfile(address, value){
+    return await updateProfile.call(this, address, value)
+  }
+
+  async getProfiles(params){
+    return await getProfiles.call(this, params);
+  }
+
+  async getProfile(address){
+    return await getProfile.call(this, address);
   }
 
   // Event Functions

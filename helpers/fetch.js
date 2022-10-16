@@ -1,6 +1,6 @@
 import axios from "axios";
 import QuickEncrypt from 'quick-encrypt';
-import {encryptData, decryptData, getPublicKey} from "./metamask";
+import {encryptData, decryptData, getPublicKey} from "./metamask.js";
 
 export default class Fetch {
 
@@ -173,6 +173,21 @@ export default class Fetch {
   }
 
   // Notifications
+  async updateProfile({address, ciphertext, encryption_key_id}){
+    let result = await this.send("/updateProfile",{ address, ciphertext, encryption_key_id});
+    return result.data;
+  }
+
+  async getProfiles({gte, limit}){
+    let result = await this.send("/getProfiles",{ gte, limit });
+    return result.data;
+  }
+
+  async getProfile(address){
+    let result = await this.send("/getProfile",{ address });
+    return result.data;
+  }
+
   async sendSMSCall({address, text}) {
     let result = await this.send("/sendSMS",{ address, text});
     return result.data;
