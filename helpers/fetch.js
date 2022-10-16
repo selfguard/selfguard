@@ -87,6 +87,11 @@ export default class Fetch {
     return result.data
   }
 
+  async getIPFSAPIKey(){
+    let result = await this.send("/getIPFSAPIKey",{});
+    return result.data;
+  }
+
   async retrieveFiles(){
     let result = await this.send("/retrieveFiles",{});
     return result.data

@@ -3,8 +3,6 @@ import {decryptShard, streamEncryptWeb} from '../helpers/encryption.js';
 import {File} from 'fetch-blob/file.js'
 import { v4 as uuidv4 } from 'uuid';
 
-let WEB3_STORAGE_URL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDQxRjQ1QTY3NDQzRGJDNmQ3N0NEOThFYjJDZDVFZThERjRDMTlCYjciLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NTg5NTI4NTYxOTksIm5hbWUiOiJ0ZXN0In0.I-fSz9b0Thg3nC5bnHHURoYiaXKHC9E3dcvJM7IdV4A';
-
  /**
   * It takes a file, splits it into shards, encrypts each shard, and uploads them to IPFS
   * @param file - the file to be encrypted
@@ -14,6 +12,8 @@ let WEB3_STORAGE_URL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXR
     try {
       let file_id = uuidv4();
       let public_key = this.pub_key;
+
+      let WEB3_STORAGE_URL = await this.fetch.getIPFSAPIKey();
 
       if(file.size > 500*1000*1000) throw new Error('File size must be less than 500 MB');
       //save file assocation for each shard
