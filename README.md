@@ -1,15 +1,13 @@
 
+
 <div align='center'>
   <img src='https://bafybeigfziugbx7542fy63mjyyeqtbbdpkbwj6mqu6gelkovgryvhbrglm.ipfs.w3s.link/selfguard.png'>
   <h1 align='center'> SelfGuard</h1>
   <h3 align='center'>Universal API For Encryption</h3>
-  <p align='center'> SelfGuard allows you to easily encrypt and tokenize data  in a secure and compliant manner. </p>
+  <p align='center'> SelfGuard provides encryption APIs and tooling to allow web2/3 developers to build enhanced and secure UI/UX. These include Encrypted Notifications, File Storage, Custodianship, and Payments. </p>
+  <p align='center'> Contact arjun@selfguard.xyz for me information. </p>
   <p align='center'> <b>Get your API-Key</b> at <a href='https://selfguard.xyz'> https://selfguard.xyz </a>
 </div>
-
-## Description
-
-SelfGuard takes out the hassle of implementing your own encryption scheme and storage of respective encryption keys. All API calls are logged and the event trail can be viewed by the API Key holder.  
 
 ## Installation
 
@@ -38,10 +36,14 @@ let sg = new SelfGuard(API_KEY);
 // or
 
 let sg = new SelfGuard(API_KEY, PUBLIC_KEY, PRIVATE_KEY);
-
 //This will leverage asymmetric encryption for all stored encryption keys.
 //When encryption keys are sent to SelfGuard they are encrypted using the PUBLIC_KEY.
 //When encryption keys are recieved from SelfGuard they are decrypted using the PRIVATE_KEY.
+
+// or
+
+let sg = new SelfGuard(API_KEY, 'metamask');
+//This will leverage the user's metamask wallet to asymmetrically encrypt data.
 
 ```
 ## Key Pair
@@ -74,10 +76,7 @@ Allows you to retrieve all encrypted key pairs stored with this account
 
 ```javascript
 
-let key_pairs = await sg.getKeyPairs();
-
-//decrypt the last uploaded key pair
-let  decrypted_key_pair = sg.decryptWithPassword(key_pairs[key_pairs.length -1].encrypted_private_key,'password');
+await sg.getKeyPairs();
 
 ```
 
@@ -123,34 +122,34 @@ console.log(decryptedText)
 // 'This is some super top secret text!'
 
 ```
+## File Storage
+Used for storing encrypted files onto decentralized storage protocols like IPFS. 
 
-
-### File Storage
-
-### Encrypt File
-Allows you to shard and encrypt any file and automatically upload it to IPFS
+### Upload/Encrypt File
 ```javascript
 
-  const file = new File(["foobartexthello"], "foo.txt", {type: "text/plain"});
-  let fileId = await sg.encryptFile(file, 3);
+await sg.encryptFile(file,(err,progress) => {
+	console.log(progress);
+});
 
 ```
 
 ### Decrypt File
-Allows you to retrieve the file shards for the associated file id and decrypt them 
 ```javascript
 
-let file2 = await sg.decryptFile(fileId);
+await sg.decryptFile(id,(err,progress) => {
+	console.log(progress);
+});
 
 ```
 
-### Get Files
-Allows you to retrieve all files stored with SelfGuard + IPFS
+### Get List of Files
 ```javascript
 
-let files = await sg.getFiles();
+await sg.getFiles();
 
 ```
+
 
 ## Data Tokenization
 
@@ -211,22 +210,22 @@ Used as an encrypted database to store key -> multiple values. Value data is ful
 
 ```javascript
 
-await sg.createArray('name');
+await sg.initArray('key');
 
 ```
 
 ### Add To Array
 ```javascript
 
-await sg.addToArray('name','value');
-await sg.addToArray('name','value2');
+await sg.addToArray('key','value');
+await sg.addToArray('key','value2');
 
 ```
 
 ### Add User To Array
 ```javascript
 
-await sg.addUserToArray('name','0xabc...');
+await sg.addUserToArray('key','0xabc...');
 
 ```
 
@@ -234,7 +233,7 @@ await sg.addUserToArray('name','0xabc...');
 ### Get Array
 ```javascript
 
-let data = await sg.getArray('name');
+let data = await sg.getArray('key');
 console.log(data)
 // ['value','value2']
 
@@ -247,7 +246,7 @@ let keys = await sg.getArrayNames();
 console.log(keys);
 /*
 [{
-	name: 'name',
+	name: 'key',
 	length: 2,
 	created_at: '2022-09-07T19:58:35.616997+00:00'
 }]
@@ -257,11 +256,29 @@ console.log(keys);
 
 
 ## Notifications
-Used to send texts or emails to addresses who's email and phone number are stored using the encrypted key/value storage. Keys should be stored as
-```javascript
-'0x5F9f570eD75b3D8798D6b1309825d26f9B9038D1-profile'
+Used to send texts or emails to addresses who's email and phone number are stored using the encrypted key/value storage. 
+
+### React Component For Notifications 
+
+Add Package
 ```
-when storing the email and phone number for 0x5F9f570eD75b3D8798D6b1309825d26f9B9038D1.
+npm install selfguard-react-components
+```
+
+Implement Component
+```javascript
+import { Notifications } from  'selfguard-react-components';
+return (
+	<Notifications  userAddress={account}  api_key={process.env.REACT_APP_SELFGUARD_API_KEY}  />
+)
+```
+### Update Profile
+```javascript
+
+await sg.updateProfile('0xadfb..',{email:'test@gmail.com',phone:'+12121112345'});
+
+```
+
 
 ### Send SMS
 ```javascript
