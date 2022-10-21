@@ -34,8 +34,8 @@ export async function sendSMS({ address, collection_name, text }) {
  */
 export async function updateProfile({address, value, collection_name}) {
   try {
-    let email_activated = value && value.email && value.email.length > 1;
-    let phone_activated = value && value.phone && value.phone.length > 1;
+    let email_activated = value && value.email && value.email.length > 1 ? true : false;
+    let phone_activated = value && value.phone && value.phone.length > 1 ? true : false;
     await this.fetch.getNotificationGroupByName({collection_name});
     let {encryption_key_id, ciphertext} = await this.encrypt(value);
     await this.fetch.updateProfile({collection_name, address, ciphertext, encryption_key_id, email_activated, phone_activated});
