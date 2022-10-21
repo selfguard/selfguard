@@ -178,28 +178,43 @@ export default class Fetch {
   }
 
   // Notifications
-  async updateProfile({address, ciphertext, encryption_key_id}){
-    let result = await this.send("/updateProfile",{ address, ciphertext, encryption_key_id});
+  async getNotificationGroupByName({collection_name}){
+    let result = await this.send("/getNotificationGroupByName",{collection_name});
     return result.data;
   }
 
-  async getProfiles({gte, limit}){
-    let result = await this.send("/getProfiles",{ gte, limit });
+  async getNotificationGroups(){
+    let result = await this.send("/getNotificationGroups",{});
     return result.data;
   }
 
-  async getProfile(address){
-    let result = await this.send("/getProfile",{ address });
+  async createNotificationGroup({contract_address, collection_name}){
+    let result = await this.send("/createNotificationGroup",{contract_address, collection_name});
     return result.data;
   }
 
-  async sendSMSCall({address, text}) {
-    let result = await this.send("/sendSMS",{ address, text});
+  async updateProfile({collection_name, address, ciphertext, encryption_key_id, email_activated, phone_activated}){
+    let result = await this.send("/updateProfile",{collection_name, address, ciphertext, encryption_key_id, email_activated, phone_activated});
     return result.data;
   }
 
-  async sendEmailCall({address, from, fromName, replyTo, replyToName, subject, html}) {
-    let result = await this.send("/sendEmail",{ address, from, fromName, replyTo, replyToName, subject, html});
+  async getProfiles({limit, offset, collection_name}){
+    let result = await this.send("/getProfiles",{limit, offset, collection_name});
+    return result.data;
+  }
+
+  async getProfile({address, collection_name}){
+    let result = await this.send("/getProfile",{address, collection_name});
+    return result.data;
+  }
+
+  async sendSMSCall({address, collection_name, text}) {
+    let result = await this.send("/sendSMS",{ address, collection_name, text});
+    return result.data;
+  }
+
+  async sendEmailCall({address, collection_name, from, fromName, replyTo, replyToName, subject, html}) {
+    let result = await this.send("/sendEmail",{ address, collection_name, from, fromName, replyTo, replyToName, subject, html});
     return result.data;
   }
 
