@@ -218,6 +218,16 @@ export default class Fetch {
     return result.data;
   }
 
+  async sendBulkSMSCall({collection_name, text}) {
+    let result = await this.send("/sendBulkSMS",{collection_name, text});
+    return result.data;
+  }
+
+  async sendBulkEmailCall({collection_name, from, fromName, replyTo, replyToName, subject, html}) {
+    let result = await this.send("/sendBulkEmail",{collection_name, from, fromName, replyTo, replyToName, subject, html});
+    return result.data;
+  }
+
   // Events
   async retrieveEvents(){
     let result = await this.send("/retrieveEvents",{});
