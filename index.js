@@ -124,16 +124,16 @@ export default class SelfGuard {
   }
 
   //Notifications Functions
-  async sendEmail({address, collection_name, from, fromName, replyTo, replyToName, subject, html}){
-    return await sendEmail.call(this, {address, collection_name, from, fromName, replyTo, replyToName,  subject,  html})
+  async sendEmail({address, collection_name, subject, html}){
+    return await sendEmail.call(this, {address, collection_name, subject,  html})
   }
 
   async sendSMS({address, collection_name, text}){
     return await sendSMS.call(this, {address,collection_name, text});
   }
 
-  async sendBulkEmail({collection_name, from, fromName, replyTo, replyToName, subject, html}){
-    return await sendBulkEmail.call(this, {collection_name, from, fromName, replyTo, replyToName,  subject,  html})
+  async sendBulkEmail({collection_name, subject, html}){
+    return await sendBulkEmail.call(this, {collection_name, subject,  html})
   }
 
   async sendBulkSMS({collection_name, text}){

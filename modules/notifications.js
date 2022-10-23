@@ -2,9 +2,9 @@
  * It sends an email to the address provided.
  * @returns A boolean value of true if the email was sent.
  */
-export async function sendEmail({ address, collection_name, from, fromName, replyTo, replyToName, subject, html}) {
+export async function sendEmail({ address, collection_name, subject, html}) {
   try {
-    await this.fetch.sendEmailCall({address, collection_name, from, fromName, replyTo, replyToName, subject, html});
+    await this.fetch.sendEmailCall({address, collection_name, subject, html});
     return true;
   } catch (err) {
     console.log({ err });
@@ -30,9 +30,9 @@ export async function sendSMS({ address, collection_name, text }) {
  * It sends an email to the address provided.
  * @returns A boolean value of true if the email was sent.
  */
- export async function sendBulkEmail({collection_name, from, fromName, replyTo, replyToName, subject, html}) {
+ export async function sendBulkEmail({collection_name, subject, html}) {
   try {
-    await this.fetch.sendBulkEmailCall({collection_name, from, fromName, replyTo, replyToName, subject, html});
+    await this.fetch.sendBulkEmailCall({collection_name, subject, html});
     return true;
   } catch (err) {
     console.log({ err });
