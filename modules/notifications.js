@@ -108,3 +108,8 @@ export async function createNotificationGroup({contract_address, collection_name
   let data = await this.fetch.createNotificationGroup({contract_address, collection_name});
   return data;
 }
+
+export async function updateIntroductionMessage({notification_group_id, email_subject, email_html, sms_text}) {
+  let data = await this.fetch.updateIntroductionMessage({notification_group_id, email_subject, email_html, sms_text});
+  return data;
+}

@@ -193,6 +193,11 @@ export default class Fetch {
     return result.data;
   }
 
+  async updateIntroductionMessage({notification_group_id, email_subject, email_html, sms_text}){
+    let result = await this.send("/updateIntroductionMessage",{notification_group_id, email_subject, email_html, sms_text});
+    return result.data;
+  }
+
   async updateProfile({collection_name, address, ciphertext, encryption_key_id, email_activated, phone_activated}){
     let result = await this.send("/updateProfile",{collection_name, address, ciphertext, encryption_key_id, email_activated, phone_activated});
     return result.data;
