@@ -24,7 +24,7 @@ import { v4 as uuidv4 } from 'uuid';
       //iterate through each file chunk that has been encrypted
       let i = 0;
       let size_so_far = 0;
-      await streamEncryptWeb(file, async (encrypted_bytes, encryption_key, chunkLength)=>{
+      await streamEncryptWeb(file, public_key, async (encrypted_bytes, encryption_key, chunkLength)=>{
          // create the encryption key id
         let encryption_key_id = uuidv4();
 
@@ -69,7 +69,7 @@ export async function decryptFile(file_id, callback){
           let {encryption_key, cid} = file_shards[i];
           let encrypted_file = await retrieveIPFSFile(cid, name, type);
           if(typeof callback === 'function') callback(null, Math.floor((i+1)/file_shards.length*100))
-          let decrypted_shard = await decryptShard(encrypted_file, encryption_key);
+          let decrypted_shard = await decryptShard(encrypted_file, encryption_key, this.pub_key);
           decrypted_shards.push(decrypted_shard);
         }
         catch(err){

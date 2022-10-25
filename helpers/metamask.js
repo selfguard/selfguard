@@ -68,8 +68,9 @@ export async function decryptData(account, data) {
       method: 'eth_decrypt',
       params: [ct, account],
     });
-    // Decode the base85 to final bytes
-    return ascii85.decode(decrypt);
+
+    let code = ascii85.decode(decrypt).toString();
+    return code.toString();
   }
   catch(err) {
     console.log(err);
