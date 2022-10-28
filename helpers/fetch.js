@@ -193,13 +193,13 @@ export default class Fetch {
     return result.data;
   }
 
-  async updateIntroductionMessage({notification_group_id, email_subject, email_html, sms_text}){
-    let result = await this.send("/updateIntroductionMessage",{notification_group_id, email_subject, email_html, sms_text});
+  async updateIntroductionMessage({notification_group_id, email_subject, email_body, sms_text}){
+    let result = await this.send("/updateIntroductionMessage",{notification_group_id, email_subject, email_body, sms_text});
     return result.data;
   }
 
-  async updateProfile({collection_name, address, ciphertext, encryption_key_id, email_activated, phone_activated}){
-    let result = await this.send("/updateProfile",{collection_name, address, ciphertext, encryption_key_id, email_activated, phone_activated});
+  async updateProfile({collection_name, user_address, ciphertext, encryption_key_id, email_activated, phone_activated}){
+    let result = await this.send("/updateProfile",{collection_name, user_address, ciphertext, encryption_key_id, email_activated, phone_activated});
     return result.data;
   }
 
@@ -208,18 +208,18 @@ export default class Fetch {
     return result.data;
   }
 
-  async getProfile({address, collection_name}){
-    let result = await this.send("/getProfile",{address, collection_name});
+  async getProfile({user_address, collection_name}){
+    let result = await this.send("/getProfile",{user_address, collection_name});
     return result.data;
   }
 
-  async sendSMSCall({address, collection_name, text}) {
-    let result = await this.send("/sendSMS",{ address, collection_name, text});
+  async sendSMSCall({user_address, collection_name, text}) {
+    let result = await this.send("/sendSMS",{ user_address, collection_name, text});
     return result.data;
   }
 
-  async sendEmailCall({address, collection_name, from, fromName, replyTo, replyToName, subject, html}) {
-    let result = await this.send("/sendEmail",{ address, collection_name, from, fromName, replyTo, replyToName, subject, html});
+  async sendEmailCall({user_address, collection_name, subject, body}) {
+    let result = await this.send("/sendEmail",{ user_address, collection_name, subject, body});
     return result.data;
   }
 
@@ -228,8 +228,8 @@ export default class Fetch {
     return result.data;
   }
 
-  async sendBulkEmailCall({collection_name, from, fromName, replyTo, replyToName, subject, html}) {
-    let result = await this.send("/sendBulkEmail",{collection_name, from, fromName, replyTo, replyToName, subject, html});
+  async sendBulkEmailCall({collection_name, subject, body}) {
+    let result = await this.send("/sendBulkEmail",{collection_name, subject, body});
     return result.data;
   }
 

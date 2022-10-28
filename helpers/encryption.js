@@ -134,10 +134,6 @@ export async function decryptValue(encrypted_value, encryption_key){
 	return text;
 }
 
-export function decryptWithPrivateKey(encryption_key, private_key){
-	return QuickEncrypt.decrypt(encryption_key, private_key);
-}
-
 /**
  * It takes a hex string and returns a Uint8Array
  * @param hexString - The hex string to convert to a Uint8Array.

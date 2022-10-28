@@ -124,32 +124,32 @@ export default class SelfGuard {
   }
 
   //Notifications Functions
-  async sendEmail({address, collection_name, subject, html}){
-    return await sendEmail.call(this, {address, collection_name, subject,  html})
+  async sendEmail({user_address, collection_name, subject, body}){
+    return await sendEmail.call(this, {user_address, collection_name, subject,  body})
   }
 
-  async sendSMS({address, collection_name, text}){
-    return await sendSMS.call(this, {address,collection_name, text});
+  async sendSMS({user_address, collection_name, text}){
+    return await sendSMS.call(this, {user_address, collection_name, text});
   }
 
-  async sendBulkEmail({collection_name, subject, html}){
-    return await sendBulkEmail.call(this, {collection_name, subject,  html})
+  async sendBulkEmail({collection_name, subject, body}){
+    return await sendBulkEmail.call(this, {collection_name, subject, body})
   }
 
   async sendBulkSMS({collection_name, text}){
     return await sendBulkSMS.call(this, {collection_name, text});
   }
 
-  async updateProfile({address, value, collection_name}){
-    return await updateProfile.call(this, {address, value, collection_name})
+  async updateProfile({user_address, value, collection_name}){
+    return await updateProfile.call(this, {user_address, value, collection_name})
   }
 
   async getProfiles({limit, offset, collection_name}){
     return await getProfiles.call(this, {limit, offset, collection_name});
   }
 
-  async getProfile({address, collection_name}) {
-    return await getProfile.call(this, {address, collection_name});
+  async getProfile({user_address, collection_name}) {
+    return await getProfile.call(this, {user_address, collection_name});
   }
   
   async getNotificationGroupByName({collection_name}) {
@@ -164,8 +164,8 @@ export default class SelfGuard {
     return await createNotificationGroup.call(this, {contract_address, collection_name});
   }
 
-  async updateIntroductionMessage({notification_group_id, email_subject, email_html, sms_text}) {
-    return await updateIntroductionMessage.call(this, {notification_group_id, email_subject, email_html, sms_text});
+  async updateIntroductionMessage({notification_group_id, email_subject, email_body, sms_text}) {
+    return await updateIntroductionMessage.call(this, {notification_group_id, email_subject, email_body, sms_text});
   }
 
   // Event Functions
