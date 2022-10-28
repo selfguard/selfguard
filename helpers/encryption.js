@@ -1,6 +1,5 @@
 import {Crypto} from '@peculiar/webcrypto';
 import { generateFileBufferSlices } from './stream_files.js';
-import QuickEncrypt from 'quick-encrypt';
 import {saveLitEncryptionKey, getLitEncryptionKey} from './lit.js';
 
 let crypto = new Crypto();

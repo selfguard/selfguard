@@ -16,8 +16,13 @@ function makeStorageClient(token) {
  */
  export async function retrieveIPFSFile(cid, name, type) {
   let retrieve = async () => {
+    axios.defaults.headers.common = {
+      // Accept: type,
+      // 'Access-Control-Allow-Origin': window.location.href,
+      // 'Access-Control-Allow-Headers': `Content-Type, Authorization`
+    };
     let res = await axios.get(
-      `https://${cid}.ipfs.w3s.link/ipfs/${cid}/${name}`,
+      `https://${cid}.ipfs.w3s.link/${name}`,
       {
         headers: {
           Accept: type,

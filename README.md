@@ -6,7 +6,8 @@
   <h3 align='center'>Universal API For Encryption</h3>
   <p align='center'> SelfGuard provides encryption APIs and tooling to allow web2/3 developers to build enhanced and secure UI/UX. These include Encrypted Notifications, File Storage, Custodianship, and Payments. </p>
   <p align='center'> Contact arjun@selfguard.xyz for me information. </p>
-  <p align='center'> <b>Get your API-Key</b> at <a href='https://selfguard.xyz'> https://selfguard.xyz </a>
+  <p align='center'> <b>Get your API-Key</b> at <a href='https://selfguard.xyz'> https://selfguard.xyz </a></p>
+  <p align='center'> <a href='https://docs.selfguard.xyz'> <b>View Docs</b> </a></p>
 </div>
 
 ## Installation
