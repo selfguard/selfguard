@@ -1,3 +1,5 @@
+import {encryptValue, decryptValue} from '../helpers/encryption.js';
+
 /**
 * If the key exists, update it. If it doesn't exist, create it
 * @param key - the key to store the value under
@@ -6,8 +8,12 @@
 */
 export async function put(key, value) {
     try {
-        let {encryption_key_id, ciphertext} = await this.encrypt(value);
-        await this.fetch.updateKeyValueData({key, ciphertext, encryption_key_id});
+        //encrypt the value
+        let {encryption_key, ciphertext} = await encryptValue(value);
+        //go ahead and encrypt the encryption key
+        let encryption_instance = await this.encryptEncryptionKey(encryption_key);
+
+        await this.fetch.updateKeyValueData({key, ciphertext, encryption_instance});
     }
     catch(err){
         console.log({err});
@@ -23,9 +29,17 @@ export async function put(key, value) {
  */
 export async function get(key) {
     try {
-        let {encryption_key_id, ciphertext} = await this.fetch.retrieveKeyValueData(key);
-        let value = await this.decrypt(ciphertext, encryption_key_id);
-        return value;
+        let {encryption_instance, ciphertext} = await this.fetch.retrieveKeyValueData(key);
+
+        let encryption_key = await this.decryptEncryptionKey(encryption_instance.encryption_keys[0]);
+    
+        //decrypt the value
+        let decrypted_value = await decryptValue(ciphertext, encryption_key);
+    
+        //convert to object if needed
+        try {decrypted_value = typeof JSON.parse(decrypted_value) === 'object' ? JSON.parse(decrypted_value) : decrypted_value;} catch(err){}
+          
+        return decrypted_value;
     }
     catch(err){
         console.log({err})

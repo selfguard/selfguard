@@ -9,7 +9,6 @@ import ee from 'easy-encryption';
  export async function encrypt(value){
     try {
         //if the value is an object, convert it to a string
-        if(typeof value === "object") value = JSON.stringify(value);
         let {encryption_key, ciphertext} = await encryptValue(value);
 
         //go ahead and encrypt the encryption key
@@ -60,9 +59,7 @@ export async function decrypt(value, encryption_key_id){
       let decrypted_value = await decryptValue(value, encryption_key);
       
       //convert to object if needed
-      try {
-        decrypted_value = typeof JSON.parse(decrypted_value) === 'object' ? JSON.parse(decrypted_value) : decrypted_value;
-      } catch(err){}
+      try {decrypted_value = typeof JSON.parse(decrypted_value) === 'object' ? JSON.parse(decrypted_value) : decrypted_value;} catch(err){}
 
       return decrypted_value;
     }

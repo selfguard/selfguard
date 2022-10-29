@@ -50,13 +50,13 @@ export default class Fetch {
   }
   
    // Tokenization 
-   async saveTokenizedData({id, ciphertext, encryption_key_id}){
-    let result = await this.send("/saveTokenizedData",{id, ciphertext, encryption_key_id});
+   async saveTokenizedData({id, ciphertext, encryption_instance}){
+    let result = await this.send("/saveTokenizedData",{id, ciphertext, encryption_instance});
     return result.data;
   }
 
-  async updateTokenizedData({id, ciphertext, encryption_key_id}){
-    let result = await this.send("/updateTokenizedData",{id, ciphertext, encryption_key_id});
+  async updateTokenizedData({id, ciphertext, encryption_instance}){
+    let result = await this.send("/updateTokenizedData",{id, ciphertext, encryption_instance});
     return result.data;
   }
 
@@ -78,13 +78,13 @@ export default class Fetch {
  
 
   // Key Value 
-  async saveKeyValueData({key, ciphertext, encryption_key_id}){
-    let result = await this.send("/saveKeyValueData",{ key, ciphertext, encryption_key_id});
+  async saveKeyValueData({key, ciphertext, encryption_instance}){
+    let result = await this.send("/saveKeyValueData",{ key, ciphertext, encryption_instance});
     return result.data;
   }
 
-  async updateKeyValueData({key, ciphertext, encryption_key_id}){
-    let result = await this.send("/updateKeyValueData",{ key, ciphertext, encryption_key_id});
+  async updateKeyValueData({key, ciphertext, encryption_instance}){
+    let result = await this.send("/updateKeyValueData",{ key, ciphertext, encryption_instance});
     return result.data;
   }
 
@@ -150,8 +150,8 @@ export default class Fetch {
     return result.data;
   }
 
-  async updateProfile({collection_name, user_address, ciphertext, encryption_key_id, email_activated, phone_activated}){
-    let result = await this.send("/updateProfile",{collection_name, user_address, ciphertext, encryption_key_id, email_activated, phone_activated});
+  async updateProfile({collection_name, user_address, ciphertext, encryption_instance, email_activated, phone_activated}){
+    let result = await this.send("/updateProfile",{collection_name, user_address, ciphertext, encryption_instance, email_activated, phone_activated});
     return result.data;
   }
 

@@ -79,6 +79,9 @@ export async function encryptBytes(plaintextbytes){
  * @returns An object with two properties: encrypted_value and encryption_key.
  */
 export async function encryptValue(value){
+	//convert object to string
+	if(typeof value === "object") value = JSON.stringify(value);
+
 	//convert string to bytes
 	let plaintextbytes = new TextEncoder('utf-8').encode(value);
 

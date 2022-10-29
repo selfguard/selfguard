@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import {encryptValue, decryptValue} from '../helpers/encryption.js';
 
 /**
     * It takes a value, encrypts it, saves it to the database, and returns the id of the saved data
@@ -7,9 +8,15 @@ import { v4 as uuidv4 } from 'uuid';
     */
  export async function tokenize(value) {
     try {
-        let {encryption_key_id, ciphertext} = await this.encrypt(value);
         let id = "tok_"+uuidv4();
-        await this.fetch.saveTokenizedData({id, ciphertext, encryption_key_id});
+
+        //encrypt the value
+        let {encryption_key, ciphertext} = await encryptValue(value);
+
+        //go ahead and encrypt the encryption key
+        let encryption_instance = await this.encryptEncryptionKey(encryption_key);
+
+        await this.fetch.saveTokenizedData({id, ciphertext, encryption_instance});
         return id;
     }
     catch(err){
@@ -25,9 +32,17 @@ import { v4 as uuidv4 } from 'uuid';
  */
 export async function detokenize(id) {
   try {
-    let {encryption_key_id, ciphertext} = await this.fetch.retrieveTokenizedData(id)
-    let decrypted_data = await this.decrypt(ciphertext, encryption_key_id);
-    return decrypted_data;
+    let {encryption_instance, ciphertext} = await this.fetch.retrieveTokenizedData(id)
+
+    let encryption_key = await this.decryptEncryptionKey(encryption_instance.encryption_keys[0]);
+
+    //decrypt the value
+    let decrypted_value = await decryptValue(ciphertext, encryption_key);
+
+    //convert to object if needed
+    try {decrypted_value = typeof JSON.parse(decrypted_value) === 'object' ? JSON.parse(decrypted_value) : decrypted_value;} catch(err){}
+          
+    return decrypted_value;
   }
   catch(err){
     console.log({err});

@@ -1,3 +1,4 @@
+import {encryptValue} from '../helpers/encryption.js';
 /**
  * It sends an email to the address provided.
  * @returns A boolean value of true if the email was sent.
@@ -62,11 +63,18 @@ export async function sendBulkSMS({collection_name, text }) {
  */
 export async function updateProfile({user_address, value, collection_name}) {
   try {
+    //check to make sure the group actually exists
+    await this.fetch.getNotificationGroupByName(collection_name);
+
     let email_activated = value && value.email && value.email.length > 1 ? true : false;
     let phone_activated = value && value.phone && value.phone.length > 1 ? true : false;
-    await this.fetch.getNotificationGroupByName(collection_name);
-    let {encryption_key_id, ciphertext} = await this.encrypt(value);
-    await this.fetch.updateProfile({collection_name, user_address, ciphertext, encryption_key_id, email_activated, phone_activated});
+
+    //encrypt the value
+    let {encryption_key, ciphertext} = await encryptValue(value);
+    //go ahead and encrypt the encryption key
+    let encryption_instance = await this.encryptEncryptionKey(encryption_key);
+
+    await this.fetch.updateProfile({collection_name, user_address, ciphertext, encryption_instance, email_activated, phone_activated});
   }
   catch(err){
     console.log({err})
