@@ -1,6 +1,5 @@
 import {Crypto} from '@peculiar/webcrypto';
 import { generateFileBufferSlices } from './stream_files.js';
-import {saveLitEncryptionKey, getLitEncryptionKey} from './lit.js';
 
 let crypto = new Crypto();
 var pbkdf2iterations=10000;
@@ -112,8 +111,7 @@ export async function decryptBytes(bytes, encryption_key){
  * @param encryption_key - The encryption key used to encrypt the shard.
  * @returns The decrypted bytes of the file.
  */
-export async function decryptShard(objFile, encryption_key, pub_key) {
-	if(pub_key === 'metamask') encryption_key = await getLitEncryptionKey(encryption_key);
+export async function decryptShard(objFile, encryption_key) {
 	var bytes = await objFile.arrayBuffer();
 	let decrypted_bytes = await decryptBytes(bytes, encryption_key);
 	return decrypted_bytes;
@@ -155,14 +153,13 @@ function hexStringToUint8Array(hexString){
   return arrayBuffer;
 }
 
-export async function streamEncryptWeb(file,public_key, chunk_function){
+export async function streamEncryptWeb(file, chunk_function){
 	//minimum 5 chunks for the file, if the file is over 300MB, set each chunk to 100MB.  
 	let chunk_size = file.size > 100*1000*1000 ? 100*1000*1000 : file.size;
 
 	for await(const slice of generateFileBufferSlices(file, chunk_size)) {
 		//encrypt shard
 		let {encryption_key, encrypted_bytes} = await encryptBytes(slice);
-		if(public_key === 'metamask') encryption_key = await saveLitEncryptionKey(encryption_key);
 
 		//run the chunk function on the data
 		await chunk_function(encrypted_bytes, encryption_key, slice.byteLength);

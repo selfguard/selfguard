@@ -1,13 +1,11 @@
 import axios from "axios";
-import QuickEncrypt from 'quick-encrypt';
-import {encryptData, decryptData, getPublicKey} from "./metamask.js";
 
 export default class Fetch {
 
   constructor(api_key, public_key, private_key, api_domain) {
     this.url = api_domain || "https://api.selfguard.xyz";
     this.api_key = api_key;
-    this.pub_key = public_key; //optional
+    this.public_key = public_key; //optional
     this.private_key = private_key; //optional
   }
 
@@ -19,71 +17,25 @@ export default class Fetch {
     return result;
   }
 
-  //Asymmetric Encryption Functions
-  async asymmetricEncryption(data, metamaskKey){
-    if(this.pub_key && this.pub_key !== 'metamask') {
-      data = QuickEncrypt.encrypt(data, this.pub_key) // wrap with public key
-    }
-    else if(this.pub_key === 'metamask') {
-      if(!metamaskKey) metamaskKey = await getPublicKey();
-      return await encryptData(data, metamaskKey);
-    }
-    return {ciphertext:data, metamask_address:null};
-  }
-  
-  async asymmetricDecryption(public_key, metamask_address, data){
-    if(public_key === this.pub_key && public_key != null && this.pub_key != 'metamask') {
-      data = QuickEncrypt.decrypt(data, this.private_key) // unwrap with private key
-    }
-    else if(public_key === this.pub_key && this.pub_key === 'metamask') {
-      data = await decryptData(metamask_address, data);
-    }
-    if(public_key && this.pub_key !== public_key){
-      throw new Error("Public key mismatch for decryption")
-    }
-    return data;
-  }
-
   // Encryption Keys
-  async saveEncryptionKey(encryption_key){
-
-    let {ciphertext, metamask_address} = await this.asymmetricEncryption(encryption_key);
-    
-    let result = await this.send("/saveEncryptionKey",{public_key:this.pub_key, metamask_address, key:ciphertext});
+  async saveEncryptionKey({id, public_key, key, wallet_type, wallet_address, asymmetrically_encrypted, lit_enabled, no_encryption, asymmetric_encryption_type}){
+    let result = await this.send("/saveEncryptionKey",{id, public_key, key, wallet_type, wallet_address, asymmetrically_encrypted, lit_enabled, no_encryption, asymmetric_encryption_type});
     return result.data;
   }
 
   async retrieveEncryptionKey(id){
-
     let result = await this.send("/retrieveEncryptionKey",{id});
-    let {key, public_key, metamask_address} = result.data.encryption_keys[0];
-
-    key = await this.asymmetricDecryption(public_key, metamask_address, key);
-
-    return key;
+    return result.data;
   }
 
   //File Storage
-  async saveFileAssociation({id, name, type, document_hash, file_shards})  {
-    let metamaskKey = this.pub_key === 'metamask' ? await getPublicKey() : null;
-
-    file_shards = await Promise.all(file_shards.map(async (f)=>{
-      let {ciphertext, metamask_address} = await this.asymmetricEncryption(f.encryption_key.key,metamaskKey);
-      f.encryption_key.key = ciphertext;
-      f.encryption_key.metamask_address = metamask_address;
-      return f;
-    }));
-
-    let result = await this.send("/saveFileAssociation",{public_key:this.pub_key,id, name, type, document_hash, file_shards});
+  async saveFileAssociation({id, size, name, type, document_hash, file_shards})  {
+    let result = await this.send("/saveFileAssociation",{id, size, name, type, document_hash, file_shards});
     return result.data
   }
 
   async retrieveFile(id){
     let result = await this.send("/retrieveFile",{id});
-    result.data.file_shards = await Promise.all(result.data.file_shards.map(async (shard)=>{
-      shard.encryption_key = await this.asymmetricDecryption(shard.public_key, shard.metamask_address, shard.encryption_key);
-      return shard;
-    }));
     return result.data
   }
 
@@ -104,18 +56,18 @@ export default class Fetch {
   }
 
   async updateTokenizedData({id, ciphertext, encryption_key_id}){
-    let result = await this.send("/updateTokenizedData",{id,ciphertext, encryption_key_id});
+    let result = await this.send("/updateTokenizedData",{id, ciphertext, encryption_key_id});
     return result.data;
   }
 
-  async retrieveTokenizedData({id}){
+  async retrieveTokenizedData(id){
     let result = await this.send("/retrieveTokenizedData",{id});
     return result.data;
   }
 
   // Key Pair
-  async saveKeyPair({public_key, encrypted_private_key}){
-    let result = await this.send("/saveKeyPair",{public_key, encrypted_private_key});
+  async saveKeyPair({public_key, encrypted_private_key,type}){
+    let result = await this.send("/saveKeyPair",{public_key, encrypted_private_key, type});
     return result.data;
   }
 
@@ -136,7 +88,7 @@ export default class Fetch {
     return result.data;
   }
 
-  async retrieveKeyValueData({key}){
+  async retrieveKeyValueData(key){
     let result = await this.send("/retrieveKeyValueData",{ key});
     return result.data;
   }
@@ -147,7 +99,7 @@ export default class Fetch {
   }
 
    // Array 
-   async initArray({name}) {
+   async initArray(name) {
     let result = await this.send("/initArray",{name });
     return result.data;
   }
@@ -172,13 +124,13 @@ export default class Fetch {
     return result.data;
   }
 
-  async getArrayEncryptionKeys({name}) {
+  async getArrayEncryptionKeys(name) {
     let result = await this.send("/getArrayEncryptionKeys",{name});
     return result.data;
   }
 
   // Notifications
-  async getNotificationGroupByName({collection_name}){
+  async getNotificationGroupByName(collection_name){
     let result = await this.send("/getNotificationGroupByName",{collection_name});
     return result.data;
   }

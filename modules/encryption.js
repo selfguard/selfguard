@@ -10,9 +10,13 @@ import ee from 'easy-encryption';
     try {
         //if the value is an object, convert it to a string
         if(typeof value === "object") value = JSON.stringify(value);
-
         let {encryption_key, ciphertext} = await encryptValue(value);
-        let encryption_key_id = await this.fetch.saveEncryptionKey(encryption_key);
+
+        //go ahead and encrypt the encryption key
+        let encryption_key_instance = await this.encryptEncryptionKey(encryption_key);
+    
+        let encryption_key_id = await this.fetch.saveEncryptionKey(encryption_key_instance);
+
         return {encryption_key_id, ciphertext};
     }
     catch(err){
@@ -20,7 +24,6 @@ import ee from 'easy-encryption';
         throw new Error(err);
     }
 }
-
  
  /**
   * It encrypts the value with the password.
@@ -48,9 +51,14 @@ export function encryptWithPassword(value, password){
    */
 export async function decrypt(value, encryption_key_id){
     try {
-      let encryption_key = await this.fetch.retrieveEncryptionKey(encryption_key_id);
-      let decrypted_value = await decryptValue(value, encryption_key);
+      let encryption_key_instance = await this.fetch.retrieveEncryptionKey(encryption_key_id);
+      
+      //decrypt the decryption key
+      let encryption_key = await this.decryptEncryptionKey(encryption_key_instance);
 
+      //decrypt the value
+      let decrypted_value = await decryptValue(value, encryption_key);
+      
       //convert to object if needed
       try {
         decrypted_value = typeof JSON.parse(decrypted_value) === 'object' ? JSON.parse(decrypted_value) : decrypted_value;

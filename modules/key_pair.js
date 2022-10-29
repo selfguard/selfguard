@@ -11,16 +11,18 @@ export function createKeyPair(type){
         if(type === 'ecdsa'){
         let wallet = ethers.Wallet.createRandom();
         return {
+            type,
             public_key: wallet.publicKey,
             private_key: wallet.privateKey
         }
         }
         else {
-        let keys = QuickEncrypt.generate(1024);
-        return {
-            public_key:keys.public,
-            private_key:keys.private
-        };
+            let keys = QuickEncrypt.generate(1024);
+            return {
+                type,
+                public_key:keys.public,
+                private_key:keys.private
+            };
         }
     }
     catch(err){
@@ -51,11 +53,11 @@ export async function getKeyPairs(){
   * @param password - The password you want to use to encrypt your private key.
   * @returns A boolean value of true if the keypair was successfully saved
   */
-export async function uploadKeyPair({public_key, private_key}, password){
+export async function uploadKeyPair({public_key, private_key, type}, password){
     try {
-    let encrypted_private_key = this.encryptWithPassword(private_key,password);
-    await this.fetch.saveKeyPair({public_key, encrypted_private_key});
-    return true;
+        let encrypted_private_key = this.encryptWithPassword(private_key,password);
+        await this.fetch.saveKeyPair({public_key, encrypted_private_key, type});
+        return true;
     }
     catch(err){
         console.log({err});

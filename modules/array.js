@@ -9,7 +9,7 @@ import QuickEncrypt from "quick-encrypt";
 export async function initArray(name) {
   try {
     // create array
-    await this.fetch.initArray({ name });
+    await this.fetch.initArray(name);
 
     //create underlying encryption key for array
     let encryption_key = uuidv4();
@@ -131,7 +131,7 @@ export async function getArrayNames() {
 export async function getMyEncryptionKeyForArray(name) {
   try {
     // get the encryption key
-    let encryption_keys = await this.fetch.getArrayEncryptionKeys({ name });
+    let encryption_keys = await this.fetch.getArrayEncryptionKeys(name);
 
     //filter it for the encryption key respective to my public key or an
     //encryption key that is not asymmetrically encrypted

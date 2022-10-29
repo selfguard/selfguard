@@ -23,7 +23,7 @@ export async function put(key, value) {
  */
 export async function get(key) {
     try {
-        let {encryption_key_id, ciphertext} = await this.fetch.retrieveKeyValueData({key});
+        let {encryption_key_id, ciphertext} = await this.fetch.retrieveKeyValueData(key);
         let value = await this.decrypt(ciphertext, encryption_key_id);
         return value;
     }

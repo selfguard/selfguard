@@ -25,7 +25,7 @@ import { v4 as uuidv4 } from 'uuid';
  */
 export async function detokenize(id) {
   try {
-    let {encryption_key_id, ciphertext} = await this.fetch.retrieveTokenizedData({id})
+    let {encryption_key_id, ciphertext} = await this.fetch.retrieveTokenizedData(id)
     let decrypted_data = await this.decrypt(ciphertext, encryption_key_id);
     return decrypted_data;
   }

@@ -94,8 +94,8 @@ export async function getProfile({user_address, collection_name}){
   return data;
 }
 
-export async function getNotificationGroupByName({collection_name}){
-  let data = await this.fetch.getNotificationGroupByName({collection_name});
+export async function getNotificationGroupByName(collection_name){
+  let data = await this.fetch.getNotificationGroupByName(collection_name);
   return data;
 }
 

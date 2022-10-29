@@ -1,5 +1,7 @@
 // Pure Encrytion 
 import {encrypt, encryptWithPassword, decrypt, decryptWithPassword} from './modules/encryption.js'
+// Encryption Key Management
+import { encryptEncryptionKey, decryptEncryptionKey } from './modules/encryption_key.js';
 //Tokenization Functions
 import {tokenize, detokenize} from './modules/data_tokenization.js';
 //File Storage Functions
@@ -23,12 +25,12 @@ export default class SelfGuard {
   constructor(api_key, public_key, private_key, api_domain) {
     this.api_domain = api_domain || "https://api.selfguard.xyz";
     this.api_key = api_key;
-    this.pub_key = public_key; //optional
+    this.public_key = public_key; //optional
     this.private_key = private_key; //optional
-    this.fetch = new Fetch(this.api_key, this.pub_key, this.private_key, this.api_domain);
+    this.fetch = new Fetch(this.api_key, this.public_key, this.private_key, this.api_domain);
   }
 
-  // Pure Encryption Functions
+  // Core Encryption Functions
   async encrypt(value){
     return await encrypt.call(this, value);
   }
@@ -43,6 +45,14 @@ export default class SelfGuard {
 
   decryptWithPassword(value, password){
     return decryptWithPassword.call(this, value, password);
+  }
+
+  //Encryption Key Management
+  async encryptEncryptionKey(encryption_key){
+    return await encryptEncryptionKey.call(this, encryption_key);
+  }
+  async decryptEncryptionKey(encryption_key_instance){
+    return await decryptEncryptionKey.call(this, encryption_key_instance);
   }
 
   //File Storage Methods
@@ -62,7 +72,6 @@ export default class SelfGuard {
     return await getFileEncryptionKeys.call(this, file_id);
   }
 
-
   //Tokenization Functions
   async tokenize(value) {
     return await tokenize.call(this, value);
@@ -81,8 +90,8 @@ export default class SelfGuard {
     return await getKeyPairs.call(this);
   }
 
-  async uploadKeyPair({public_key, private_key}, password){
-    return await uploadKeyPair.call(this, {public_key, private_key}, password);
+  async uploadKeyPair({public_key, private_key, type}, password){
+    return await uploadKeyPair.call(this, {public_key, private_key, type}, password);
   }
 
   // Key Value Functions
@@ -112,7 +121,7 @@ export default class SelfGuard {
   }
 
   async getArray(name, gte, limit){
-    return await getArray.call(this, name, gte, limit);rn
+    return await getArray.call(this, name, gte, limit);
   }
 
   async getArrayNames() {
@@ -152,8 +161,8 @@ export default class SelfGuard {
     return await getProfile.call(this, {user_address, collection_name});
   }
   
-  async getNotificationGroupByName({collection_name}) {
-    return await getNotificationGroupByName.call(this, {collection_name});
+  async getNotificationGroupByName(collection_name) {
+    return await getNotificationGroupByName.call(this, collection_name);
   }
 
   async getNotificationGroups() {
