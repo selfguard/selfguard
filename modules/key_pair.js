@@ -10,11 +10,11 @@ export function createKeyPair(type){
     try {
         if(type === 'ecdsa'){
         let wallet = ethers.Wallet.createRandom();
-        return {
-            type,
-            public_key: wallet.publicKey,
-            private_key: wallet.privateKey
-        }
+            return {
+                type,
+                public_key: wallet.publicKey,
+                private_key: wallet.privateKey
+            }
         }
         else {
             let keys = QuickEncrypt.generate(1024);

@@ -22,12 +22,13 @@ import Fetch from './helpers/fetch.js';
 
 export default class SelfGuard {
 
-  constructor(api_key, public_key, private_key, api_domain) {
+  constructor(api_key, key_pair_type, public_key, private_key, api_domain) {
     this.api_domain = api_domain || "https://api.selfguard.xyz";
     this.api_key = api_key;
+    this.key_pair_type = key_pair_type; //optional
     this.public_key = public_key; //optional
     this.private_key = private_key; //optional
-    this.fetch = new Fetch(this.api_key, this.public_key, this.private_key, this.api_domain);
+    this.fetch = new Fetch(this.api_key, this.key_pair_type, this.public_key, this.private_key, this.api_domain);
   }
 
   // Core Encryption Functions

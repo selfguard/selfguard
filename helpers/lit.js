@@ -29,17 +29,17 @@ export async function getAuthSig(chain) {
     return authSig;
 }
 
-export async function getEncryptionParams(chain){
+export async function getEncryptionParams(chain, sig, addr){
     if(!window.litNodeClient) await initLit();
-    let address = window.ethereum.selectedAddress;
-    let authSig = await getAuthSig(chain);
-    let accessControlConditions = getCondition(address,chain);
+    //if we have passed in an auth sig, just use that, otherwise call metamask
+    let authSig = sig ? sig : await getAuthSig(chain);
+    let accessControlConditions = getCondition(authSig.address,chain);
     return {authSig, accessControlConditions};
 }
 
-export async function saveLitEncryptionKey(symmetricKey, chain) {
+export async function saveLitEncryptionKey(symmetricKey, chain, sig) {
     if(!chain) chain = 'ropsten';
-    let {authSig, accessControlConditions} = await getEncryptionParams(chain);
+    let {authSig, accessControlConditions} = await getEncryptionParams(chain, sig);
     symmetricKey = LitJsSdk.uint8arrayFromString(symmetricKey, "base16");
     let encryptedSymmetricKey = await window.litNodeClient.saveEncryptionKey({
         accessControlConditions,
@@ -51,10 +51,10 @@ export async function saveLitEncryptionKey(symmetricKey, chain) {
     return encryptedSymmetricKey
 }
 
-export async function getLitEncryptionKey(encryptedSymmetricKey, chain){
+export async function getLitEncryptionKey(encryptedSymmetricKey, chain, sig){
     try {
         if(!chain) chain = 'ropsten';
-        let {authSig, accessControlConditions} = await getEncryptionParams(chain);
+        let {authSig, accessControlConditions} = await getEncryptionParams(chain, sig);
         let symmetricKey = await window.litNodeClient.getEncryptionKey({
             accessControlConditions,
             toDecrypt: encryptedSymmetricKey,
