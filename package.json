@@ -19,7 +19,7 @@
     "eth-crypto": "^2.4.0",
     "ethers": "^5.7.0",
     "fetch-blob": "^3.2.0",
-    "quick-encrypt": "^1.0.8",
+    "quick-encrypt": "https://github.com/joshuaquek/QuickEncrypt.git",
     "siwe": "^1.1.6",
     "uuid": "^8.3.2",
     "web3.storage": "^4.3.0"
