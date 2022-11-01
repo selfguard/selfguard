@@ -30,9 +30,17 @@ async function createAuthSig(private_key) {
   }
 }
 
-export async function encryptEncryptionKey(encryption_key) {
+export async function encryptEncryptionKey(encryption_key, basic) {
 
   let id = uuidv4();
+
+  if(basic){
+    return {
+      id,
+      no_encryption: true,
+      key: encryption_key
+    }
+  }
 
   //if metamask, encrypt the key with lit
   if(this.key_pair_type === 'metamask') {
