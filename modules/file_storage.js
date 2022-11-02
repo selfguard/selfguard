@@ -48,6 +48,7 @@ import { v4 as uuidv4 } from 'uuid';
         id:file_id,
         created_at: Date.now(),
         type: file.type,
+        size: totalSize,
         name: file.name
       }
     }
