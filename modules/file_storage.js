@@ -28,10 +28,11 @@ import { v4 as uuidv4 } from 'uuid';
 
         // //save the file to ipfs
         let encrypted_file = new File([encrypted_bytes],file.name,{type:file.type});
+        console.log({encrypted_file});
         let cid = await storeWithProgress(WEB3_STORAGE_URL,[encrypted_file], size_so_far/totalSize, totalSize, chunkLength, callback);
        
         //encrypt the encryption key 
-        let encryption_instance = await this.encryptEncryptionKey(encryption_key);
+        let encryption_instance = await this.encryptEncryptionKey(encryption_key,'file');
 
         //append to list of file shards
         file_shards.push({cid, index:i, encryption_instance});
@@ -69,6 +70,7 @@ export async function decryptFile(file_id, callback){
     for(let i = 0; i < file_shards.length;i++){
         try {
           let {encryption_instance, cid} = file_shards[i];
+          console.log({encryption_instance});
 
           //retrieve the file
           let encrypted_file = await retrieveIPFSFile(cid, name, type);

@@ -11,7 +11,7 @@ export async function put(key, value) {
         //encrypt the value
         let {encryption_key, ciphertext} = await encryptValue(value);
         //go ahead and encrypt the encryption key
-        let encryption_instance = await this.encryptEncryptionKey(encryption_key);
+        let encryption_instance = await this.encryptEncryptionKey(encryption_key,'key_value');
 
         await this.fetch.updateKeyValueData({key, ciphertext, encryption_instance});
     }

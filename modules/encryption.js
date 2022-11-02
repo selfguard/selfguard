@@ -12,7 +12,7 @@ import ee from 'easy-encryption';
         let {encryption_key, ciphertext} = await encryptValue(value);
 
         //go ahead and encrypt the encryption key
-        let encryption_key_instance = await this.encryptEncryptionKey(encryption_key);
+        let encryption_key_instance = await this.encryptEncryptionKey(encryption_key,'raw');
     
         let encryption_key_id = await this.fetch.saveEncryptionKey(encryption_key_instance);
 

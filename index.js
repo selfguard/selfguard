@@ -49,8 +49,8 @@ export default class SelfGuard {
   }
 
   //Encryption Key Management
-  async encryptEncryptionKey(encryption_key){
-    return await encryptEncryptionKey.call(this, encryption_key);
+  async encryptEncryptionKey(encryption_key, type){
+    return await encryptEncryptionKey.call(this, encryption_key, type);
   }
   async decryptEncryptionKey(encryption_key_instance){
     return await decryptEncryptionKey.call(this, encryption_key_instance);

@@ -14,7 +14,7 @@ import {encryptValue, decryptValue} from '../helpers/encryption.js';
         let {encryption_key, ciphertext} = await encryptValue(value);
 
         //go ahead and encrypt the encryption key
-        let encryption_instance = await this.encryptEncryptionKey(encryption_key);
+        let encryption_instance = await this.encryptEncryptionKey(encryption_key, 'tokenization');
 
         await this.fetch.saveTokenizedData({id, ciphertext, encryption_instance});
         return id;

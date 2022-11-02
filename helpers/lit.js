@@ -29,7 +29,7 @@ export async function getAuthSig(chain) {
     return authSig;
 }
 
-export async function getEncryptionParams(chain, sig, addr){
+export async function getEncryptionParams(chain, sig){
     if(!window.litNodeClient) await initLit();
     //if we have passed in an auth sig, just use that, otherwise call metamask
     let authSig = sig ? sig : await getAuthSig(chain);
@@ -38,7 +38,7 @@ export async function getEncryptionParams(chain, sig, addr){
 }
 
 export async function saveLitEncryptionKey(symmetricKey, chain, sig) {
-    if(!chain) chain = 'ropsten';
+    if(!chain) chain = 'ethereum';
     let {authSig, accessControlConditions} = await getEncryptionParams(chain, sig);
     symmetricKey = LitJsSdk.uint8arrayFromString(symmetricKey, "base16");
     let encryptedSymmetricKey = await window.litNodeClient.saveEncryptionKey({
@@ -53,7 +53,7 @@ export async function saveLitEncryptionKey(symmetricKey, chain, sig) {
 
 export async function getLitEncryptionKey(encryptedSymmetricKey, chain, sig){
     try {
-        if(!chain) chain = 'ropsten';
+        if(!chain) chain = 'ethereum';
         let {authSig, accessControlConditions} = await getEncryptionParams(chain, sig);
         let symmetricKey = await window.litNodeClient.getEncryptionKey({
             accessControlConditions,

@@ -19,8 +19,8 @@ export default class Fetch {
   }
 
   // Encryption Keys
-  async saveEncryptionKey({id, public_key, key, wallet_type, wallet_address, asymmetrically_encrypted, lit_enabled, no_encryption, asymmetric_encryption_type}){
-    let result = await this.send("/saveEncryptionKey",{id, public_key, key, wallet_type, wallet_address, asymmetrically_encrypted, lit_enabled, no_encryption, asymmetric_encryption_type});
+  async saveEncryptionKey({id, public_key, key, wallet_type,type, wallet_address, asymmetrically_encrypted,lit_chain, lit_enabled, no_encryption, asymmetric_encryption_type}){
+    let result = await this.send("/saveEncryptionKey",{id, public_key,type, key, wallet_type, wallet_address,lit_chain, asymmetrically_encrypted, lit_enabled, no_encryption, asymmetric_encryption_type});
     return result.data;
   }
 
