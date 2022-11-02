@@ -13,8 +13,10 @@ import {initArray, addUserToArray, addToArray, getArray, getArrayNames, getMyEnc
 //Key Value Functions
 import {get, put, getKeys} from './modules/key_value.js';
 //Notification Functions
-import {sendEmail, sendSMS, updateProfile, getProfiles, sendBulkEmail, sendBulkSMS, updateIntroductionMessage,
-  getProfile, createNotificationGroup, getNotificationGroupByName, getNotificationGroups} from './modules/notifications.js';
+import {sendEmail, sendSMS, sendBulkEmail, sendBulkSMS} from './modules/notifications.js';
+import {updateProfile, getProfiles, getProfile} from './modules/profiles.js';
+import {updateIntroductionMessage, createNotificationGroup, getNotificationGroupByName, 
+  getNotificationGroups, updateNotificationGroup, deleteNotificationGroup} from './modules/notification_groups.js';
 //Event Functions
 import {retrieveEvents} from './modules/events.js';
 
@@ -176,6 +178,14 @@ export default class SelfGuard {
 
   async updateIntroductionMessage({notification_group_id, email_subject, email_body, sms_text}) {
     return await updateIntroductionMessage.call(this, {notification_group_id, email_subject, email_body, sms_text});
+  }
+
+  async updateNotificationGroup({old_collection_name, collection_name, contract_address}) {
+    return await updateNotificationGroup.call(this, {old_collection_name, collection_name, contract_address});
+  }
+
+  async deleteNotificationGroup({collection_name}) {
+    return await deleteNotificationGroup.call(this, {collection_name});
   }
 
   // Event Functions
