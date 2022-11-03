@@ -156,6 +156,11 @@ export default class Fetch {
     return result.data;
   }
 
+  async activateIntroductionMessage({collection_name,activate}){
+    let result = await this.send("/activateIntroductionMessage",{collection_name,activate});
+    return result.data;
+  }
+
   async updateIntroductionMessage({notification_group_id, email_subject, email_body, sms_text}){
     let result = await this.send("/updateIntroductionMessage",{notification_group_id, email_subject, email_body, sms_text});
     return result.data;
@@ -193,6 +198,11 @@ export default class Fetch {
 
   async sendBulkEmailCall({collection_name, subject, body}) {
     let result = await this.send("/sendBulkEmail",{collection_name, subject, body});
+    return result.data;
+  }
+
+  async getNotificationCount(){
+    let result = await this.send("/getNotificationCount",{});
     return result.data;
   }
 

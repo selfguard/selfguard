@@ -27,3 +27,13 @@ export async function updateIntroductionMessage({notification_group_id, email_su
   let data = await this.fetch.updateIntroductionMessage({notification_group_id, email_subject, email_body, sms_text});
   return data;
 }
+
+export async function activateIntroductionMessage({collection_name,activate}) {
+  let data = await this.fetch.activateIntroductionMessage({collection_name,activate});
+  return data;
+}
+
+export async function getNotificationCount() {
+  let data = await this.fetch.getNotificationCount();
+  return data;
+}

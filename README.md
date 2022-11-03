@@ -1,12 +1,11 @@
-
-
 <div align='center'>
   <img src='https://bafybeigfziugbx7542fy63mjyyeqtbbdpkbwj6mqu6gelkovgryvhbrglm.ipfs.w3s.link/selfguard.png'>
   <h1 align='center'> SelfGuard</h1>
   <h3 align='center'>Universal API For Encryption</h3>
   <p align='center'> SelfGuard provides encryption APIs and tooling to allow web2/3 developers to build enhanced and secure UI/UX. These include Encrypted Notifications, File Storage, Custodianship, and Payments. </p>
-  <p align='center'> Contact arjun@selfguard.xyz for me information. </p>
+  <p align='center'> Contact arjun@selfguard.xyz with any questions. </p>
   <p align='center'> <b>Get your API-Key</b> at <a href='https://selfguard.xyz'> https://selfguard.xyz </a>
+  <p align='center'><a href='https://docs.selfguard.xyz'> View the Full Docs </a></p>
 </div>
 
 ## Installation
@@ -74,7 +73,7 @@ await sg.getKeyPairs();
 ## Encryption
 
 ### Encrypt:
-Allows you to encrypt any piece of data and receive the respective encryption key id (the encryption key is stored with SelfGuard) and the encrypted text. 
+Allows you to encrypt any piece of data and receive the respective encryption key id (the encryption key is stored with SelfGuard) and the encrypted text.
 ```javascript
 
 await sg.encrypt( 'This is some super top secret text!')
@@ -82,7 +81,7 @@ await sg.encrypt( 'This is some super top secret text!')
 ```
 
 ### Decrypt:
-Allows you to decrypt previously encrypted data by providing the encrypted text and the encryption key id respective to the encrypted data. 
+Allows you to decrypt previously encrypted data by providing the encrypted text and the encryption key id respective to the encrypted data.
 ```javascript
 
 await sg.decrypt(encrypted_text, encryption_key_id)
@@ -105,7 +104,7 @@ sg.decryptWithPassword(ciphertext, 'password')
 
 ```
 ## File Storage
-Used for storing encrypted files onto decentralized storage protocols like IPFS. 
+Used for storing encrypted files onto decentralized storage protocols like IPFS.
 
 ### Upload/Encrypt File
 ```javascript
@@ -136,7 +135,7 @@ await sg.getFiles();
 ## Data Tokenization
 
 ### Tokenize:
-Allows you to encrypt data and store the encrypted data with SelfGuard itself. 
+Allows you to encrypt data and store the encrypted data with SelfGuard itself.
 ```javascript
 
 await sg.tokenize( 'This is some super top secret text!');
@@ -154,7 +153,7 @@ let data = await sg.detokenize(token_id)
 ## Encrypted Key/Value Storage
 
 ### Put:
-Allows you to store any key value data where the value is encrypted. 
+Allows you to store any key value data where the value is encrypted.
 ```javascript
 
 await sg.put('key','value');
@@ -220,9 +219,9 @@ let keys = await sg.getArrayNames();
 
 
 ## Notifications
-Used to send texts or emails to addresses who's email and phone number are stored using the encrypted key/value storage. 
+Used to send texts or emails to addresses who's email and phone number are stored using the encrypted key/value storage.
 
-### React Component For Notifications 
+### React Component For Notifications
 
 Add Package
 ```
@@ -233,10 +232,10 @@ Implement Component
 ```javascript
 import { Notifications } from  'selfguard-react-components';
 return (
-	<Notifications 
-    api_key={api_key} 
-    collection_name={collection_name} 
-    userAddress={userAddress} 
+	<Notifications
+    api_key={api_key}
+    collection_name={collection_name}
+    userAddress={userAddress}
     sms_text={sms_text}
     email_subject={email_subject}
     email_body={email_body}
