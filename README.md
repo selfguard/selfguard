@@ -6,8 +6,7 @@
   <h3 align='center'>Universal API For Encryption</h3>
   <p align='center'> SelfGuard provides encryption APIs and tooling to allow web2/3 developers to build enhanced and secure UI/UX. These include Encrypted Notifications, File Storage, Custodianship, and Payments. </p>
   <p align='center'> Contact arjun@selfguard.xyz for me information. </p>
-  <p align='center'> <b>Get your API-Key</b> at <a href='https://selfguard.xyz'> https://selfguard.xyz </a></p>
-  <p align='center'> <a href='https://docs.selfguard.xyz'> <b>View Docs</b> </a></p>
+  <p align='center'> <b>Get your API-Key</b> at <a href='https://selfguard.xyz'> https://selfguard.xyz </a>
 </div>
 
 ## Installation
@@ -22,31 +21,29 @@
 
 import SelfGuard from 'selfguard-client';
 
-// or
-
-let SelfGuard = require('selfguard-client');
-
 ```
 
-### Instantiate
 
-```javascript
+# Instantiation
+There are three main ways to instantiate SelfGuard.
 
+### Without Asymmetric Encryption
+
+This instantiates SelfGuard such that data with SelfGuard can be decrypted with this API-KEY.
+```js
 let sg = new SelfGuard(API_KEY);
-
-// or
-
-let sg = new SelfGuard(API_KEY, PUBLIC_KEY, PRIVATE_KEY);
-//This will leverage asymmetric encryption for all stored encryption keys.
-//When encryption keys are sent to SelfGuard they are encrypted using the PUBLIC_KEY.
-//When encryption keys are recieved from SelfGuard they are decrypted using the PRIVATE_KEY.
-
-// or
-
-let sg = new SelfGuard(API_KEY, 'metamask');
-//This will leverage the user's metamask wallet to asymmetrically encrypt data.
-
 ```
+### With Asymmetric Encryption (Key Pair)
+This instantiates SelfGuard such that data encrypted with SelfGuard can only be decrypted by the user with the respective public/private key pair.
+```js
+let sg = new SelfGuard(API_KEY, key_pair_type, public_key, private_key);
+```
+### With Asymmetric Encryption (Metamask)
+This instantiates SelfGuard such that data encrypted with SelfGuard can only be decrypted by the end user's metamask's account.
+```js
+let sg = new SelfGuard(API_KEY, 'metamask');
+```
+
 ## Key Pair
 
 ### Generate Public Private Key Pair
@@ -54,13 +51,6 @@ Allows you to create an RSA or ECSDA key pair.
 ```javascript
 
 let key_pair = sg.createKeyPair('rsa' || 'ecdsa');
-console.log(key_pair);
-/*
-{
-  public_key: '-----BEGIN RSA PUBLIC KEY-----\n....',
-  private_key: '-----BEGIN RSA PRIVATE KEY-----\n...'
-}
-*/
 
 ```
 
@@ -87,10 +77,7 @@ await sg.getKeyPairs();
 Allows you to encrypt any piece of data and receive the respective encryption key id (the encryption key is stored with SelfGuard) and the encrypted text. 
 ```javascript
 
-let {encrypted_text, encryption_key_id} = await sg.encrypt( 'This is some super top secret text!')
-
-console.log({encrypted_text,encryption_key_id})
-// {encrypted_text: '5ac4asffda...... ', encryption_key_id:'e791a8a...'}
+await sg.encrypt( 'This is some super top secret text!')
 
 ```
 
@@ -98,10 +85,7 @@ console.log({encrypted_text,encryption_key_id})
 Allows you to decrypt previously encrypted data by providing the encrypted text and the encryption key id respective to the encrypted data. 
 ```javascript
 
-let decryptedText = await sg.decrypt(encrypted_text, encryption_key_id)
-
-console.log(decryptedText)
-// 'This is some super top secret text!'
+await sg.decrypt(encrypted_text, encryption_key_id)
 
 ```
 
@@ -109,7 +93,7 @@ console.log(decryptedText)
 Allows you to encrypt any piece of data with a password.
 ```javascript
 
-let ciphertext = sg.encryptWithPassword( 'This is some super top secret text!','password')
+sg.encryptWithPassword( 'This is some super top secret text!','password')
 
 ```
 
@@ -117,10 +101,7 @@ let ciphertext = sg.encryptWithPassword( 'This is some super top secret text!','
 Allows you to decrypt encrypted data with the respective password.
 ```javascript
 
-let decryptedText = sg.decryptWithPassword(ciphertext, 'password')
-
-console.log(decryptedText)
-// 'This is some super top secret text!'
+sg.decryptWithPassword(ciphertext, 'password')
 
 ```
 ## File Storage
@@ -158,9 +139,7 @@ await sg.getFiles();
 Allows you to encrypt data and store the encrypted data with SelfGuard itself. 
 ```javascript
 
-let token_id = await sg.tokenize( 'This is some super top secret text!')
-console.log(token_id)
-// tok_14A...
+await sg.tokenize( 'This is some super top secret text!');
 
 ```
 
@@ -169,8 +148,6 @@ Allows you to retrieve the previously tokenized data by providing the respective
 ```javascript
 
 let data = await sg.detokenize(token_id)
-console.log(data)
-// 'This is some super top secret text!'
 
 ```
 
@@ -180,7 +157,7 @@ console.log(data)
 Allows you to store any key value data where the value is encrypted. 
 ```javascript
 
-let success = await sg.put('key','value');
+await sg.put('key','value');
 
 ```
 
@@ -188,10 +165,7 @@ let success = await sg.put('key','value');
 Allows you to retrieve key value data where the value is decrypted upon retrieval
 ```javascript
 
-let value = await sg.get('key');
-
-console.log(value)
-// 'value'
+await sg.get('key');
 
 ```
 
@@ -219,7 +193,6 @@ await sg.initArray('key');
 ```javascript
 
 await sg.addToArray('key','value');
-await sg.addToArray('key','value2');
 
 ```
 
@@ -235,8 +208,6 @@ await sg.addUserToArray('key','0xabc...');
 ```javascript
 
 let data = await sg.getArray('key');
-console.log(data)
-// ['value','value2']
 
 ```
 
@@ -244,14 +215,6 @@ console.log(data)
 ```javascript
 
 let keys = await sg.getArrayNames();
-console.log(keys);
-/*
-[{
-	name: 'key',
-	length: 2,
-	created_at: '2022-09-07T19:58:35.616997+00:00'
-}]
-*/
 
 ```
 
@@ -270,13 +233,22 @@ Implement Component
 ```javascript
 import { Notifications } from  'selfguard-react-components';
 return (
-	<Notifications  userAddress={account}  api_key={process.env.REACT_APP_SELFGUARD_API_KEY}  />
+	<Notifications 
+    api_key={api_key} 
+    collection_name={collection_name} 
+    userAddress={userAddress} 
+    sms_text={sms_text}
+    email_subject={email_subject}
+    email_body={email_body}
+    onDisabled={onDisabled}
+    onEnabled={onEnabled}
+/>
 )
 ```
 ### Update Profile
 ```javascript
 
-await sg.updateProfile('0xadfb..',{email:'test@gmail.com',phone:'+12121112345'});
+await sg.updateProfile({user_address, value, collection_name});
 
 ```
 
@@ -284,13 +256,13 @@ await sg.updateProfile('0xadfb..',{email:'test@gmail.com',phone:'+12121112345'})
 ### Send SMS
 ```javascript
 
-await sg.sendSMS({address:'0xadfb..',text:'Example Text'});
+await sg.sendSMS({user_address,collection_name,text});
 
 ```
 
 ### Send Email
 ```javascript
 
-await sg.sendEmail({address:'0xadfb..',from:'example@test.com',fromName:'test',replyTo:'reply@test.com', reployToName:'test',subject:'Test Subject', html:'This is the content of the email'});
+await sg.sendEmail({user_address,collection_name, subject, body});
 
 ```
