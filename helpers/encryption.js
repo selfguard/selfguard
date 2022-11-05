@@ -100,12 +100,18 @@ export async function encryptValue(value){
  * @returns The plaintext bytes.
  */
 export async function decryptBytes(bytes, encryption_key){
-	var pbkdf2salt = bytes.slice(8,16);
-	let cipherbytes = bytes.slice(16);
-	let {key, ivbytes} = await extractKeyBytes(pbkdf2salt, encryption_key, 'decrypt');
-	var plaintextbytes = await crypto.subtle.decrypt({name: "AES-CBC", iv: ivbytes}, key, cipherbytes).catch(function(err){});
-	if (!plaintextbytes) return;
-	return new Uint8Array(plaintextbytes);
+	try {
+		var pbkdf2salt = bytes.slice(8,16);
+		let cipherbytes = bytes.slice(16);
+		let {key, ivbytes} = await extractKeyBytes(pbkdf2salt, encryption_key, 'decrypt');
+		var plaintextbytes = await crypto.subtle.decrypt({name: "AES-CBC", iv: ivbytes}, key, cipherbytes).catch(function(err){});
+		if (!plaintextbytes) return;
+		return new Uint8Array(plaintextbytes);
+	}
+	catch(err){
+		console.log(err);
+		throw new Error(err);
+	}
 }
 
 /**
