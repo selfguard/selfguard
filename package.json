@@ -1,6 +1,6 @@
 {
   "name": "selfguard-client",
-  "version": "1.1.70",
+  "version": "1.1.71",
   "description": "Universal API For Encryption",
   "main": "index.js",
   "author": "Arjun Raj Jain",
@@ -20,8 +20,7 @@
     "ethers": "^5.7.0",
     "quick-encrypt": "https://github.com/joshuaquek/QuickEncrypt.git",
     "siwe": "^1.1.6",
-    "uuid": "^8.3.2",
-    "web3.storage": "4.2.0"
+    "uuid": "^8.3.2"
   },
   "type": "module"
 }

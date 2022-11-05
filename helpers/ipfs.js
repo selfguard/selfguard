@@ -1,11 +1,11 @@
-import { Web3Storage } from "web3.storage";
+// import { Web3Storage } from "web3.storage";
 import { Crypto } from "@peculiar/webcrypto";
 let crypto = new Crypto();
 import axios from "axios";
 
-function makeStorageClient(token) {
-  return new Web3Storage({ token });
-}
+// function makeStorageClient(token) {
+//   return new Web3Storage({ token });
+// }
 
 /**
  * It takes a token and a cid, and returns a file
