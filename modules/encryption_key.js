@@ -34,7 +34,7 @@ export async function encryptEncryptionKey(encryption_key, type) {
 
   let id = uuidv4();
 
-  if(type === 'profile'){
+  if(type === 'profile' || type === 'file-link'){
     return {
       id,
       type,

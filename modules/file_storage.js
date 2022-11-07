@@ -1,4 +1,5 @@
-import {storeWithProgress, calculateFileHash, retrieveIPFSFile} from '../helpers/ipfs.js';
+import {storeWithProgress, calculateFileHash, retrieveIPFSFile, } from '../helpers/ipfs.js';
+import {uploadR2, retrieveR2File} from '../helpers/r2.js';
 import {decryptBytes, streamEncryptWeb} from '../helpers/encryption.js';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -7,12 +8,10 @@ import { v4 as uuidv4 } from 'uuid';
   * @param file - the file to be encrypted
   * @returns The file id associating all the shards is being returned.
   */
- export async function encryptFile(file, callback){
+ export async function encryptFile(file, callback, metadata){
     try {
       //if file too big, throw an error
       if(file.size > 100*1000*1000) throw new Error('File size must be less than 100 MB');
-
-      let WEB3_STORAGE_KEY = await this.fetch.getIPFSAPIKey();
 
       //save file assocation for each shard
       let document_hash = await calculateFileHash(file);
@@ -23,21 +22,34 @@ import { v4 as uuidv4 } from 'uuid';
       let i = 0;
       let size_so_far = 0;
       let file_id = uuidv4();
+
+      if(!metadata) metadata = 'raw_r2_upload';
+
       await streamEncryptWeb(file, async (encrypted_bytes, encryption_key, chunkLength)=>{
 
         // //save the file to ipfs
         let encrypted_file = new File([encrypted_bytes],file.name,{type:file.type});
-        let cid = await storeWithProgress(WEB3_STORAGE_KEY,encrypted_file, size_so_far/totalSize, totalSize, chunkLength, callback);
-       
+
+        let cid = '';
+
+        if(metadata === 'raw_r2_upload'){
+          cid = await uploadR2.call(this, encrypted_file, size_so_far, totalSize, callback);
+        }
+        else {
+          metadata = 'raw_ipfs_upload';
+          cid = await storeWithProgress.call(this, encrypted_file, size_so_far, totalSize, callback);
+        }
+        
         //encrypt the encryption key 
         let encryption_instance = await this.encryptEncryptionKey(encryption_key,'file');
 
         //append to list of file shards
-        file_shards.push({cid, index:i, encryption_instance, metadata:'raw_ipfs_upload'});
+        file_shards.push({cid, index:i, encryption_instance, metadata});
 
         size_so_far+=chunkLength;
         i++;
-      })
+      });
+
       await this.fetch.saveFileAssociation({id:file_id,size: totalSize, name:file.name, type:file.type, document_hash, file_shards})
 
       return {
@@ -71,12 +83,12 @@ export async function decryptFile(file_id, callback){
           let {encryption_instance, cid, metadata} = file_shards[i];
 
           //retrieve the file
-          let encrypted_file = await retrieveIPFSFile(cid, name, type, metadata);
+          let encrypted_file = metadata === 'raw_r2_upload' ? await retrieveR2File.call(this, cid, type) : await retrieveIPFSFile(cid, name, type, metadata);
 
           //callback with progress
           if(typeof callback === 'function') callback(null, Math.floor((i+1)/file_shards.length*100))
 
-          //decrypt the encryption _key
+          //decrypt the encryption key
           let encryption_key = await this.decryptEncryptionKey(encryption_instance.encryption_keys[0]);
 
           //decrypt the shard

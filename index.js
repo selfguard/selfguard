@@ -21,6 +21,10 @@ import {updateIntroductionMessage, createNotificationGroup, getNotificationGroup
 //Event Functions
 import {retrieveEvents} from './modules/events.js';
 
+import {retrieveSharedFiles, retrieveSharedFile,
+  retrieveFileByLink, shareFile 
+} from './modules/shared_files.js';
+
 import Fetch from './helpers/fetch.js';
 
 export default class SelfGuard {
@@ -60,8 +64,8 @@ export default class SelfGuard {
   }
 
   //File Storage Methods
-  async encryptFile(file, callback){
-    return await encryptFile.call(this, file, callback);
+  async encryptFile(file, callback, metadata){
+    return await encryptFile.call(this, file, callback, metadata);
   }
 
   async decryptFile(file_id, callback){
@@ -75,6 +79,24 @@ export default class SelfGuard {
   async getFileEncryptionKeys(file_id){
     return await getFileEncryptionKeys.call(this, file_id);
   }
+
+  //Shared File Storage
+  async shareFile(file, {email_address, wallet_address, type}){
+    return await shareFile.call(this, file, {email_address, wallet_address, type});
+  }
+
+  async retrieveSharedFiles(){
+    return await retrieveSharedFiles.call(this);
+  }
+
+  async retrieveSharedFile(id){
+    return await retrieveSharedFile.call(this,id);
+  }
+
+  async retrieveFileByLink(id){
+    return await retrieveFileByLink.call(this,id);
+  }
+
 
   //Tokenization Functions
   async tokenize(value) {

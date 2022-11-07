@@ -13,6 +13,7 @@ import axios from "axios";
  * @param cid - The CID of the file you want to retrieve.
  * @returns A file object
  */
+
  export async function retrieveIPFSFile(cid, name, type, metadata) {
   let retrieve = async () => {
     axios.defaults.headers.common = {
@@ -20,7 +21,7 @@ import axios from "axios";
       // 'Access-Control-Allow-Origin': window.location.href,
       // 'Access-Control-Allow-Headers': `Content-Type, Authorization`
     };
-    let url = `https://${cid}.ipfs.w3s.link/${metadata === 'raw_ipfs_upload' ? '' : name}`
+    let url = `https://${cid}.ipfs.w3s.link/`
     let res = await axios.get(
       url,
       {
@@ -71,13 +72,14 @@ export async function calculateFileHash(file) {
   });
 }
 
-export async function storeWithProgress(token, file, finishedSoFar, fileSize, chunkLength, callback) {
+export async function storeWithProgress(file, size_so_far, totalSize, callback) {
+  let token = await this.fetch.getIPFSAPIKey();
+
   axios.defaults.headers.common = {
     "Authorization": "Bearer " + token,
     "X-NAME": file.name.replaceAll(' ','%20')
   };
   let result = await axios.post('https://api.web3.storage/upload',file);
-  console.log({result});
   callback(null, (100))
   return result.data.cid;
 }

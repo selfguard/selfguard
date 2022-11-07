@@ -40,13 +40,44 @@ export default class Fetch {
     return result.data
   }
 
+  async retrieveFiles(){
+    let result = await this.send("/retrieveFiles",{});
+    return result.data
+  }
+
+  async getSignedR2PutURL({file_name, file_size}){
+    let result = await this.send('/getSignedR2PutURL',{file_name, file_size});
+    return result.data
+  }
+  
+  async getSignedR2GetURL({cid}){
+    let result = await this.send('/getSignedR2GetURL',{cid});
+    return result.data
+  }
+
   async getIPFSAPIKey(){
     let result = await this.send("/getIPFSAPIKey",{});
     return result.data;
   }
 
-  async retrieveFiles(){
-    let result = await this.send("/retrieveFiles",{});
+  //Shared File Storage
+  async saveSharedFileAssociation({email_address, wallet_address, type, id, file_id, file_shards})  {
+    let result = await this.send("/saveSharedFileAssociation",{email_address, wallet_address, type, id, file_id, file_shards});
+    return result.data
+  }
+
+  async retrieveSharedFiles(){
+    let result = await this.send("/retrieveSharedFiles",{});
+    return result.data
+  }
+
+  async retrieveSharedFile(id){
+    let result = await this.send("/retrieveSharedFile",{id});
+    return result.data
+  }
+
+  async retrieveFileByLink(id){
+    let result = await this.send("/retrieveFileByLink",{id});
     return result.data
   }
   
