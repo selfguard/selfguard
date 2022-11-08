@@ -5,7 +5,7 @@ import { encryptEncryptionKey, decryptEncryptionKey } from './modules/encryption
 //Tokenization Functions
 import {tokenize, detokenize} from './modules/data_tokenization.js';
 //File Storage Functions
-import {encryptFile, decryptFile, getFiles, getFileEncryptionKeys} from './modules/file_storage.js';
+import {encryptFile, decryptFile, getRawFile, getFiles, getFileEncryptionKeys, getTotalFileSizeUploaded} from './modules/file_storage.js';
 //Key Pair Functions
 import {createKeyPair, getKeyPairs, uploadKeyPair} from './modules/key_pair.js';
 //Array Functions
@@ -72,12 +72,20 @@ export default class SelfGuard {
     return await decryptFile.call(this, file_id,callback);
   }
 
+  async getRawFile(file_id){
+    return await getRawFile.call(this, file_id);
+  }
+
   async getFiles(){
     return await getFiles.call(this);
   }
 
   async getFileEncryptionKeys(file_id){
     return await getFileEncryptionKeys.call(this, file_id);
+  }
+
+  async getTotalFileSizeUploaded(){
+    return await getTotalFileSizeUploaded.call(this);
   }
 
   //Shared File Storage

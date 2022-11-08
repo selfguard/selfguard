@@ -166,7 +166,9 @@ export async function streamEncryptWeb(file, chunk_function){
 	//minimum 5 chunks for the file, if the file is over 300MB, set each chunk to 100MB.  
 	let chunk_size = file.size > 100*1000*1000 ? 100*1000*1000 : file.size;
 
-	for await(const slice of generateFileBufferSlices(file, chunk_size)) {
+	let first_size = file.size > 1000*1000 ? 1000*1000 : file.size;
+
+	for await(const slice of generateFileBufferSlices(file, first_size, chunk_size)) {
 		//encrypt shard
 		let {encryption_key, encrypted_bytes} = await encryptBytes(slice);
 

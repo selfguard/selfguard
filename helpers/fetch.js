@@ -55,8 +55,13 @@ export default class Fetch {
     return result.data
   }
 
-  async getIPFSAPIKey(){
-    let result = await this.send("/getIPFSAPIKey",{});
+  async getIPFSAPIKey({file_size}){
+    let result = await this.send("/getIPFSAPIKey",{file_size});
+    return result.data;
+  }
+
+  async getTotalFileSizeUploaded(){
+    let result = await this.send("/getTotalFileSizeUploaded",{});
     return result.data;
   }
 

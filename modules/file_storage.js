@@ -1,4 +1,4 @@
-import {storeWithProgress, calculateFileHash, retrieveIPFSFile, } from '../helpers/ipfs.js';
+import {storeIPFSFile, calculateFileHash, retrieveIPFSFile, } from '../helpers/ipfs.js';
 import {uploadR2, retrieveR2File} from '../helpers/r2.js';
 import {decryptBytes, streamEncryptWeb} from '../helpers/encryption.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -17,10 +17,10 @@ import { v4 as uuidv4 } from 'uuid';
       let document_hash = await calculateFileHash(file);
 
       let file_shards = [];
-      let totalSize = file.size;
       //iterate through each file chunk that has been encrypted
       let i = 0;
       let size_so_far = 0;
+      let totalSize = 0;
       let file_id = uuidv4();
 
       if(!metadata) metadata = 'raw_r2_upload';
@@ -32,13 +32,22 @@ import { v4 as uuidv4 } from 'uuid';
 
         let cid = '';
 
+        let callbackF = (uploaded) => {
+          if(uploaded){
+            let totalUploaded = (100*(size_so_far + (uploaded/encrypted_file.size)*chunkLength)/file.size).toFixed(2)
+            callback(null, totalUploaded);
+          }
+        }
+
         if(metadata === 'raw_r2_upload'){
-          cid = await uploadR2.call(this, encrypted_file, size_so_far, totalSize, callback);
+          cid = await uploadR2.call(this, encrypted_file, callbackF);
         }
         else {
           metadata = 'raw_ipfs_upload';
-          cid = await storeWithProgress.call(this, encrypted_file, size_so_far, totalSize, callback);
+          cid = await storeIPFSFile.call(this, encrypted_file, callbackF);
         }
+
+        totalSize += encrypted_bytes.byteLength;
         
         //encrypt the encryption key 
         let encryption_instance = await this.encryptEncryptionKey(encryption_key,'file');
@@ -68,6 +77,20 @@ import { v4 as uuidv4 } from 'uuid';
     }
   }
 
+export async function getRawFile(file_id) {
+  try {
+    let {file_shards} = await this.fetch.retrieveFile(file_id);
+    let {cid, metadata} = file_shards[0];
+    //retrieve the file
+    let encrypted_file = metadata === 'raw_r2_upload' ? await retrieveR2File.call(this, cid, ()=>{}) : await retrieveIPFSFile.call(this, cid, ()=>{});
+    return encrypted_file;
+  }
+  catch(err){
+    console.log({err});
+    throw new Error(err);
+  }
+}
+
   /**
    * It decrypts a file.
    * @param id - The id of the file you want to download
@@ -75,18 +98,24 @@ import { v4 as uuidv4 } from 'uuid';
    */
 export async function decryptFile(file_id, callback){
   try {
-    let {file_shards, name, type} = await this.fetch.retrieveFile(file_id);
+    let {file_shards, name, type, size} = await this.fetch.retrieveFile(file_id);
     //decrypt each shard
     let decrypted_shards = [];
+    let downloadedSoFar = 0;
     for(let i = 0; i < file_shards.length;i++){
         try {
           let {encryption_instance, cid, metadata} = file_shards[i];
 
-          //retrieve the file
-          let encrypted_file = metadata === 'raw_r2_upload' ? await retrieveR2File.call(this, cid, type) : await retrieveIPFSFile(cid, name, type, metadata);
+          let so_far = downloadedSoFar;
 
-          //callback with progress
-          if(typeof callback === 'function') callback(null, Math.floor((i+1)/file_shards.length*100))
+          let callbackF = (downloaded)=>{
+            console.log({size, so_far, downloadedSoFar, downloaded});
+            callback(null, (100* ((so_far+downloaded)/size)).toFixed(2));
+          }
+
+          //retrieve the file
+          let encrypted_file = metadata === 'raw_r2_upload' ? await retrieveR2File.call(this, cid, callbackF) : await retrieveIPFSFile.call(this, cid, callbackF);
+          downloadedSoFar += encrypted_file.size;
 
           //decrypt the encryption key
           let encryption_key = await this.decryptEncryptionKey(encryption_instance.encryption_keys[0]);
@@ -142,5 +171,9 @@ export async function getFileEncryptionKeys(file_id) {
     console.log({err});
     throw new Error(err);
   }
+}
+
+export async function getTotalFileSizeUploaded(){
+  return await this.fetch.getTotalFileSizeUploaded();
 }
 
