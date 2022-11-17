@@ -65,6 +65,16 @@ export default class Fetch {
     return result.data;
   }
 
+  async retrieveFileShareData(id){
+    let result = await this.send("/retrieveFileShareData",{id});
+    return result.data;
+  }
+
+  async getAddressForEmail(email_address){
+    let result = await this.send("/getAddressForEmail",{email_address});
+    return result.data;
+  }
+
   //Shared File Storage
   async saveSharedFileAssociation({email_address, wallet_address, type, id, file_id, file_shards})  {
     let result = await this.send("/saveSharedFileAssociation",{email_address, wallet_address, type, id, file_id, file_shards});

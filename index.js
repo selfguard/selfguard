@@ -5,7 +5,7 @@ import { encryptEncryptionKey, decryptEncryptionKey } from './modules/encryption
 //Tokenization Functions
 import {tokenize, detokenize} from './modules/data_tokenization.js';
 //File Storage Functions
-import {encryptFile, decryptFile, getRawFile, getFiles, getFileEncryptionKeys, getTotalFileSizeUploaded} from './modules/file_storage.js';
+import {encryptFile, decryptFile, getRawFile, getFiles, getFileEncryptionKeys, retrieveFileShareData, getTotalFileSizeUploaded} from './modules/file_storage.js';
 //Key Pair Functions
 import {createKeyPair, getKeyPairs, uploadKeyPair} from './modules/key_pair.js';
 //Array Functions
@@ -16,12 +16,11 @@ import {get, put, getKeys} from './modules/key_value.js';
 import {sendEmail, sendSMS, sendBulkEmail, sendBulkSMS} from './modules/notifications.js';
 import {updateProfile, getProfiles, getProfile} from './modules/profiles.js';
 import {updateIntroductionMessage, createNotificationGroup, getNotificationGroupByName, activateIntroductionMessage,
-  getNotificationCount,
-  getNotificationGroups, updateNotificationGroup, deleteNotificationGroup} from './modules/notification_groups.js';
+  getNotificationCount,getNotificationGroups, updateNotificationGroup, deleteNotificationGroup} from './modules/notification_groups.js';
 //Event Functions
 import {retrieveEvents} from './modules/events.js';
 
-import {retrieveSharedFiles, retrieveSharedFile,
+import {retrieveSharedFiles, retrieveSharedFile, decryptSharedFile,
   retrieveFileByLink, shareFile 
 } from './modules/shared_files.js';
 
@@ -56,8 +55,8 @@ export default class SelfGuard {
   }
 
   //Encryption Key Management
-  async encryptEncryptionKey(encryption_key, type){
-    return await encryptEncryptionKey.call(this, encryption_key, type);
+  async encryptEncryptionKey(encryption_key, type, address){
+    return await encryptEncryptionKey.call(this, encryption_key, type, address);
   }
   async decryptEncryptionKey(encryption_key_instance){
     return await decryptEncryptionKey.call(this, encryption_key_instance);
@@ -80,6 +79,10 @@ export default class SelfGuard {
     return await getFiles.call(this);
   }
 
+  async retrieveFileShareData(file_id){
+    return await retrieveFileShareData.call(this, file_id);
+  }
+
   async getFileEncryptionKeys(file_id){
     return await getFileEncryptionKeys.call(this, file_id);
   }
@@ -93,6 +96,10 @@ export default class SelfGuard {
     return await shareFile.call(this, file, {email_address, wallet_address, type});
   }
 
+  async decryptSharedFile(file_id, callback){
+    return await decryptSharedFile.call(this, file_id, callback);
+  }
+
   async retrieveSharedFiles(){
     return await retrieveSharedFiles.call(this);
   }
@@ -104,7 +111,6 @@ export default class SelfGuard {
   async retrieveFileByLink(id){
     return await retrieveFileByLink.call(this,id);
   }
-
 
   //Tokenization Functions
   async tokenize(value) {

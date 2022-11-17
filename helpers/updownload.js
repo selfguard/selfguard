@@ -1,5 +1,11 @@
 import axios from "axios";
 
+/**
+ * It downloads a file from a given url, and returns a promise that resolves to the file's data
+ * @param url - The url of the file you want to download
+ * @param callback - This is the function that will be called every time the download progress changes.
+ * @returns A promise that resolves to the data of the response.
+ */
 export const downloadProgress = (url, callback) => {
   return new Promise((resolve,reject)=>{
     axios.defaults.headers.common = {

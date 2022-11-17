@@ -30,7 +30,7 @@ async function createAuthSig(private_key) {
   }
 }
 
-export async function encryptEncryptionKey(encryption_key, type) {
+export async function encryptEncryptionKey(encryption_key, type, address) {
 
   let id = uuidv4();
 
@@ -43,8 +43,31 @@ export async function encryptEncryptionKey(encryption_key, type) {
     }
   }
 
+  //for when a user doesnt have a account yet
+  if(address === 'not-activated'){
+    return {
+      id,
+      type,
+      no_encryption: true,
+      key: encryption_key
+    }
+  }
+
+  if(address){
+    let key = await saveLitEncryptionKey(encryption_key,'ethereum', authSig, address);
+    return {
+      id,
+      key,
+      type,
+      lit_enabled: true,
+      wallet_type: 'metamask',
+      lit_chain: 'ethereum',
+      wallet_address : address
+    }
+  }
+
   //if metamask, encrypt the key with lit
-  if(this.key_pair_type === 'metamask') {
+  else if(this.key_pair_type === 'metamask') {
     let key = await saveLitEncryptionKey(encryption_key);
     return {
       id,
