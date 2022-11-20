@@ -5,7 +5,7 @@ import { encryptEncryptionKey, decryptEncryptionKey } from './modules/encryption
 //Tokenization Functions
 import {tokenize, detokenize} from './modules/data_tokenization.js';
 //File Storage Functions
-import {encryptFile, decryptFile, getRawFile, getFiles, getFileEncryptionKeys, retrieveFileShareData, getTotalFileSizeUploaded} from './modules/file_storage.js';
+import {encryptFile, decryptFile, getRawFile, getFiles, getFileEncryptionKeys, retrieveFileShareData, getTotalFileSizeUploaded} from './modules/files.js';
 //Key Pair Functions
 import {createKeyPair, getKeyPairs, uploadKeyPair} from './modules/key_pair.js';
 //Array Functions
@@ -21,7 +21,7 @@ import {updateIntroductionMessage, createNotificationGroup, getNotificationGroup
 import {retrieveEvents} from './modules/events.js';
 
 import {retrieveSharedFiles, retrieveSharedFile, decryptSharedFile,
-  retrieveFileByLink, shareFile 
+  retrieveFileByLink, shareFile, deleteSharedFile
 } from './modules/shared_files.js';
 
 import Fetch from './helpers/fetch.js';
@@ -94,6 +94,10 @@ export default class SelfGuard {
   //Shared File Storage
   async shareFile(file, {email_address, wallet_address, type}){
     return await shareFile.call(this, file, {email_address, wallet_address, type});
+  }
+
+  async deleteSharedFile(shared_file_id){
+    return await deleteSharedFile.call(this, shared_file_id);
   }
 
   async decryptSharedFile(file_id, callback){

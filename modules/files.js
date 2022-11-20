@@ -59,7 +59,7 @@ export async function encryptFile(file, callback, metadata){
       i++;
     });
 
-    this.fetch.saveFileAssociation({id:file_id,size: totalSize, name:file.name, type:file.type, document_hash, file_shards})
+    this.fetch.saveFile({id:file_id,size: totalSize, name:file.name, type:file.type, document_hash, file_shards})
 
     return {
       file_shards,

@@ -33,17 +33,23 @@ export async function shareFile(file_id, {email_address, wallet_address, type}){
       console.log({err});
     }
   }
-  await this.fetch.saveSharedFileAssociation({email_address, wallet_address, type, id, file_id, file_shards});
+  await this.fetch.saveSharedFile({email_address, wallet_address, type, id, file_id, file_shards});
   return id;
 }
 
+// export function that takes in a shared_file_id that calls fetch.deleteSharedFile with the respective id
+export async function deleteSharedFile(shared_file_id){
+  let data = await this.fetch.deleteSharedFile(shared_file_id);
+  return data;
+}
+
 export async function retrieveSharedFiles(){
-  let data =this.fetch.retrieveSharedFiles();
+  let data = await this.fetch.retrieveSharedFiles();
   return data;
 }
 
 export async function retrieveSharedFile(id){
-  let data =this.fetch.retrieveSharedFile(id);
+  let data = await this.fetch.retrieveSharedFile(id);
   return data;
 }
 

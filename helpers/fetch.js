@@ -30,8 +30,8 @@ export default class Fetch {
   }
 
   //File Storage
-  async saveFileAssociation({id, size, name, type, document_hash, file_shards})  {
-    let result = await this.send("/saveFileAssociation",{id, size, name, type, document_hash, file_shards});
+  async saveFile({id, size, name, type, document_hash, file_shards})  {
+    let result = await this.send("/saveFile",{id, size, name, type, document_hash, file_shards});
     return result.data
   }
 
@@ -76,9 +76,14 @@ export default class Fetch {
   }
 
   //Shared File Storage
-  async saveSharedFileAssociation({email_address, wallet_address, type, id, file_id, file_shards})  {
-    let result = await this.send("/saveSharedFileAssociation",{email_address, wallet_address, type, id, file_id, file_shards});
+  async saveSharedFile({email_address, wallet_address, type, id, file_id, file_shards})  {
+    let result = await this.send("/saveSharedFile",{email_address, wallet_address, type, id, file_id, file_shards});
     return result.data
+  }
+
+  async deleteSharedFile(id) {
+    let result = await this.send("/deleteSharedFile",{id});
+    return result.data;
   }
 
   async retrieveSharedFiles(){
