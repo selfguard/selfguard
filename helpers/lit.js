@@ -1,5 +1,6 @@
 import LitJsSdk from "@lit-protocol/sdk-browser";
 
+
 export async function initLit(){
     const client = new LitJsSdk.LitNodeClient();
     await client.connect();
@@ -33,26 +34,31 @@ export async function getEncryptionParams(chain, sig, address){
     if(!window.litNodeClient) await initLit();
     //if we have passed in an auth sig, just use that, otherwise call metamask
     let authSig = sig ? sig : await getAuthSig(chain);
-
     if(!address) address = authSig.address;
     let accessControlConditions = getCondition(address,chain);
     return {authSig, accessControlConditions};
 }
 
 export async function saveLitEncryptionKey(symmetricKey, chain, sig, address) {
-    if(!chain) chain = 'ethereum';
-    let {authSig, accessControlConditions} = await getEncryptionParams(chain, sig, address);
-
-    symmetricKey = LitJsSdk.uint8arrayFromString(symmetricKey, "base16");
-
-    let encryptedSymmetricKey = await window.litNodeClient.saveEncryptionKey({
-        accessControlConditions,
-        symmetricKey,
-        authSig,
-        chain,
-    });
-    encryptedSymmetricKey = LitJsSdk.uint8arrayToString(encryptedSymmetricKey, "base16");
-    return encryptedSymmetricKey
+    try {
+        if(!chain) chain = 'ethereum';
+        let {authSig, accessControlConditions} = await getEncryptionParams(chain, sig, address);
+    
+        symmetricKey = LitJsSdk.uint8arrayFromString(symmetricKey, "base16");
+    
+        let encryptedSymmetricKey = await window.litNodeClient.saveEncryptionKey({
+            accessControlConditions,
+            symmetricKey,
+            authSig,
+            chain,
+        });
+        encryptedSymmetricKey = LitJsSdk.uint8arrayToString(encryptedSymmetricKey, "base16");
+        return encryptedSymmetricKey
+    }
+    catch(e){
+        console.log(e);
+        throw new Error(e);
+    }
 }
 
 export async function getLitEncryptionKey(encryptedSymmetricKey, chain, sig, address){

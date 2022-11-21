@@ -2,6 +2,7 @@ import {retrieveIPFSFile} from '../helpers/ipfs.js';
 import {retrieveR2File} from '../helpers/r2.js';
 import {decryptBytes} from '../helpers/encryption.js';
 import { v4 as uuidv4 } from 'uuid';
+import {ethers} from 'ethers';
 
 export async function shareFile(file_id, {email_address, wallet_address, type}){
   let id = uuidv4();
@@ -20,6 +21,9 @@ export async function shareFile(file_id, {email_address, wallet_address, type}){
       }
       //if the type is a metamask address, save the encryption key for the wallet address
       else if(type === 'wallet'){
+        if(!ethers.utils.isAddress(wallet_address)) {
+          throw new Error('Invalid wallet address');
+        }
         new_encryption_instance = await this.encryptEncryptionKey(encryption_key,'file', wallet_address);
       }
       //if the type is a email, save the encryption key for the address associated to the email
@@ -72,7 +76,9 @@ export async function decryptSharedFile(file_id, callback){
           let so_far = downloadedSoFar;
 
           let callbackF = (downloaded)=>{
-            callback(null, (100* ((so_far+downloaded)/size)).toFixed(2));
+            let totalDownloaded = (100* ((so_far+downloaded)/size)).toFixed(2);
+            if(parseInt(totalDownloaded) === 100) totalDownloaded = 99.99;
+            callback(null, totalDownloaded);
           }
 
           //retrieve the file
@@ -96,6 +102,7 @@ export async function decryptSharedFile(file_id, callback){
 
     try {
       let file = new File(decrypted_shards, name,{name,type});
+      callback(null, 100);
       return file;
     }
     catch(err){

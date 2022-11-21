@@ -35,6 +35,7 @@ export async function encryptFile(file, callback, metadata){
       let callbackF = (uploaded) => {
         if(uploaded){
           let totalUploaded = (100*(size_so_far + (uploaded/encrypted_file.size)*chunkLength)/file.size).toFixed(2)
+          if(parseInt(totalUploaded) === 100) totalUploaded = 99.99;
           callback(null, totalUploaded);
         }
       }
@@ -59,7 +60,9 @@ export async function encryptFile(file, callback, metadata){
       i++;
     });
 
-    this.fetch.saveFile({id:file_id,size: totalSize, name:file.name, type:file.type, document_hash, file_shards})
+    await this.fetch.saveFile({id:file_id,size: totalSize, name:file.name, type:file.type, document_hash, file_shards})
+
+    callback(null, 100);
 
     return {
       file_shards,
@@ -112,27 +115,38 @@ export async function decryptFile(file_id, callback){
     //decrypt each shard
     let decrypted_shards = [];
     let downloadedSoFar = 0;
+    // let encryption_keys = [];
+
+
+    //promise all to decrypt all encryption keys within file shards
+    let _this = this;
+    let encryption_keys = await Promise.all(file_shards.map(({encryption_instance})=>{
+      return new Promise(async (resolve,_)=>{
+        let encryption_key = await _this.decryptEncryptionKey(encryption_instance.encryption_keys[0]);
+        resolve(encryption_key);
+      })
+    }));
+
     for(let i = 0; i < file_shards.length;i++){
         try {
-          let {encryption_instance, cid, metadata} = file_shards[i];
+          let {cid, metadata} = file_shards[i];
 
           let so_far = downloadedSoFar;
 
           let callbackF = (downloaded)=>{
-            callback(null, (100* ((so_far+downloaded)/size)).toFixed(2));
+            let totalDownloaded = (100* ((so_far+downloaded)/size)).toFixed(2);
+            if(parseInt(totalDownloaded) === 100) totalDownloaded = 99.99;
+            callback(null, totalDownloaded);
           }
 
           //retrieve the file
           let encrypted_file = metadata === 'raw_r2_upload' ? await retrieveR2File.call(this, cid, callbackF) : await retrieveIPFSFile.call(this, cid, callbackF);
           downloadedSoFar += encrypted_file.size;
 
-          //decrypt the encryption key
-          let encryption_key = await this.decryptEncryptionKey(encryption_instance.encryption_keys[0]);
-
           //decrypt the shard
           let encrypted_bytes = await encrypted_file.arrayBuffer();
 
-          let decrypted_shard = await decryptBytes(encrypted_bytes, encryption_key);
+          let decrypted_shard = await decryptBytes(encrypted_bytes, encryption_keys[i]);
           decrypted_shards.push(decrypted_shard);
         }
         catch(err){
@@ -143,6 +157,7 @@ export async function decryptFile(file_id, callback){
 
     try {
       let file = new File(decrypted_shards,name,{type});
+      callback(null, 100);
       return file;
     }
     catch(err){

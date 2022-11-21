@@ -15,14 +15,12 @@ export async function storeIPFSFile(file, callback) {
 
   let headers = {
     "Authorization": "Bearer " + token,
-    "X-NAME": file.name.replaceAll(' ','%20')
+    "X-NAME": file.name.replaceAll(' ','%20').replaceAll('...','')
   };
 
   let result = await uploadProgress('https://api.web3.storage/upload',headers, file, (uploaded)=> {
     callback(uploaded);
   });
-
-  callback(null, (100))
   return result.data.cid;
 }
 

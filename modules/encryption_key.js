@@ -31,89 +31,94 @@ async function createAuthSig(private_key) {
 }
 
 export async function encryptEncryptionKey(encryption_key, type, address) {
+  try {
+    let id = uuidv4();
 
-  let id = uuidv4();
-
-  if(type === 'profile' || type === 'file-link'){
-    return {
-      id,
-      type,
-      no_encryption: true,
-      key: encryption_key
+    if(type === 'profile' || type === 'file-link'){
+      return {
+        id,
+        type,
+        no_encryption: true,
+        key: encryption_key
+      }
+    }
+  
+    //for when a user doesnt have a account yet
+    if(address === 'not-activated'){
+      return {
+        id,
+        type,
+        no_encryption: true,
+        key: encryption_key
+      }
+    }
+  
+    if(address){
+      let key = await saveLitEncryptionKey(encryption_key,'ethereum', null, address);
+      return {
+        id,
+        key,
+        type,
+        lit_enabled: true,
+        wallet_type: 'metamask',
+        lit_chain: 'ethereum',
+        wallet_address : address
+      }
+    }
+  
+    //if metamask, encrypt the key with lit
+    else if(this.key_pair_type === 'metamask') {
+      let key = await saveLitEncryptionKey(encryption_key);
+      return {
+        id,
+        key,
+        type,
+        lit_enabled: true,
+        wallet_type: 'metamask',
+        lit_chain: 'ethereum',
+        wallet_address : window.ethereum.selectedAddress
+      }
+    }
+    else if(this.key_pair_type === 'ecdsa') {
+      //create auth sig and pass to save lit encryption key
+      let authSig = await createAuthSig(this.private_key);
+      let key = await saveLitEncryptionKey(encryption_key, 'ethereum', authSig);
+      return {
+        id,
+        key,
+        type,
+        lit_enabled: true,
+        wallet_type: 'selfguard,ecdsa',
+        lit_chain: 'ethereum',
+        public_key : this.public_key
+      }
+    }
+    //else encrypt the encryption key using asymmetric encryption
+    else if(this.key_pair_type === 'rsa') {
+      encryption_key = QuickEncrypt.encrypt(encryption_key, this.public_key) // wrap with public key
+      return {
+        id,
+        type,
+        public_key: this.public_key,
+        asymmetrically_encrypted: true,
+        asymmetric_encryption_type: 'rsa',
+        wallet_type: 'selfguard,rsa',
+        key: encryption_key
+      }
+    }
+    // else just save the encryption key as is
+    else {
+      return {
+        id,
+        type,
+        no_encryption: true,
+        key: encryption_key
+      }
     }
   }
-
-  //for when a user doesnt have a account yet
-  if(address === 'not-activated'){
-    return {
-      id,
-      type,
-      no_encryption: true,
-      key: encryption_key
-    }
-  }
-
-  if(address){
-    let key = await saveLitEncryptionKey(encryption_key,'ethereum', authSig, address);
-    return {
-      id,
-      key,
-      type,
-      lit_enabled: true,
-      wallet_type: 'metamask',
-      lit_chain: 'ethereum',
-      wallet_address : address
-    }
-  }
-
-  //if metamask, encrypt the key with lit
-  else if(this.key_pair_type === 'metamask') {
-    let key = await saveLitEncryptionKey(encryption_key);
-    return {
-      id,
-      key,
-      type,
-      lit_enabled: true,
-      wallet_type: 'metamask',
-      lit_chain: 'ethereum',
-      wallet_address : window.ethereum.selectedAddress
-    }
-  }
-  else if(this.key_pair_type === 'ecdsa') {
-    //create auth sig and pass to save lit encryption key
-    let authSig = await createAuthSig(this.private_key);
-    let key = await saveLitEncryptionKey(encryption_key, 'ethereum', authSig);
-    return {
-      id,
-      key,
-      type,
-      lit_enabled: true,
-      wallet_type: 'selfguard,ecdsa',
-      lit_chain: 'ethereum',
-      public_key : this.public_key
-    }
-  }
-  //else encrypt the encryption key using asymmetric encryption
-  else if(this.key_pair_type === 'rsa') {
-    encryption_key = QuickEncrypt.encrypt(encryption_key, this.public_key) // wrap with public key
-    return {
-      id,
-      type,
-      public_key: this.public_key,
-      asymmetrically_encrypted: true,
-      asymmetric_encryption_type: 'rsa',
-      wallet_type: 'selfguard,rsa',
-      key: encryption_key
-    }
-  }
-  // else just save the encryption key as is
-  else {
-    return {
-      id,
-      type,
-      no_encryption: true,
-      key: encryption_key
-    }
+  catch(err){
+    console.log({err});
+    throw new Error(err);
   }
 }
 
