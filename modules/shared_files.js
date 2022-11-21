@@ -17,24 +17,31 @@ export async function shareFile(file_id, {email_address, wallet_address, type}){
       let new_encryption_instance;
       //If the type is link, decrypt each encryption key for the file shard and re-encrypt and make a new file shard
       if(type === 'link'){
-        new_encryption_instance = await this.encryptEncryptionKey(encryption_key,'file-link');
+        new_encryption_instance = await this.encryptEncryptionKey(encryption_key, 'file-link');
       }
       //if the type is a metamask address, save the encryption key for the wallet address
       else if(type === 'wallet'){
         if(!ethers.utils.isAddress(wallet_address)) {
           throw new Error('Invalid wallet address');
         }
-        new_encryption_instance = await this.encryptEncryptionKey(encryption_key,'file', wallet_address);
+        new_encryption_instance = await this.encryptEncryptionKey(encryption_key, 'file', wallet_address);
       }
       //if the type is a email, save the encryption key for the address associated to the email
       else if(type === 'email'){
         let email_wallet_address = await this.fetch.getAddressForEmail(email_address);
-        new_encryption_instance = await this.encryptEncryptionKey(encryption_key,'file', email_wallet_address);
+        console.log({email_wallet_address});
+        new_encryption_instance = await this.encryptEncryptionKey(encryption_key, 'file', email_wallet_address);
+        if(email_wallet_address !== 'not-activated'){
+          new_encryption_instance.wallet_type = 'selfguard,ecdsa';
+          new_encryption_instance.public_key = email_wallet_address;
+          delete new_encryption_instance.wallet_address;
+        }
       }
       file_shards[i].encryption_instance = new_encryption_instance;
     }
     catch(err){
       console.log({err});
+      throw new Error(err);
     }
   }
   await this.fetch.saveSharedFile({email_address, wallet_address, type, id, file_id, file_shards});

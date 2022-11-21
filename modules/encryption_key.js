@@ -74,8 +74,8 @@ export async function encryptEncryptionKey(encryption_key, type, address) {
         key,
         type,
         lit_enabled: true,
-        wallet_type: 'metamask',
         lit_chain: 'ethereum',
+        wallet_type: 'metamask',
         wallet_address : window.ethereum.selectedAddress
       }
     }
@@ -83,19 +83,23 @@ export async function encryptEncryptionKey(encryption_key, type, address) {
       //create auth sig and pass to save lit encryption key
       let authSig = await createAuthSig(this.private_key);
       let key = await saveLitEncryptionKey(encryption_key, 'ethereum', authSig);
+
+      let address = ethers.utils.computeAddress(this.public_key);
+
       return {
         id,
         key,
         type,
         lit_enabled: true,
-        wallet_type: 'selfguard,ecdsa',
         lit_chain: 'ethereum',
-        public_key : this.public_key
+        wallet_type: 'selfguard,ecdsa',
+        public_key : address
       }
     }
     //else encrypt the encryption key using asymmetric encryption
     else if(this.key_pair_type === 'rsa') {
       encryption_key = QuickEncrypt.encrypt(encryption_key, this.public_key) // wrap with public key
+      
       return {
         id,
         type,
@@ -123,26 +127,34 @@ export async function encryptEncryptionKey(encryption_key, type, address) {
 }
 
 export async function decryptEncryptionKey(encrypted_encryption_key_object) {
-  let {wallet_type, wallet_address,lit_chain, asymmetrically_encrypted, public_key, lit_enabled, no_encryption, asymmetric_encryption_type, key} = encrypted_encryption_key_object;
-  
-  if(asymmetrically_encrypted) {
-    if(wallet_type === 'selfguard,rsa' && asymmetric_encryption_type === 'rsa') {
-      if(public_key === this.public_key){
-        key = QuickEncrypt.decrypt(key, this.private_key)
+  try {
+    let {wallet_type, wallet_address,lit_chain, asymmetrically_encrypted, public_key, lit_enabled, no_encryption, asymmetric_encryption_type, key} = encrypted_encryption_key_object;
+
+    if(asymmetrically_encrypted) {
+      if(wallet_type === 'selfguard,rsa' && asymmetric_encryption_type === 'rsa') {
+        if(public_key === this.public_key){
+          key = QuickEncrypt.decrypt(key, this.private_key)
+        }
       }
     }
-  }
 
-  if(lit_enabled){
-    if(wallet_type === 'metamask' && this.key_pair_type === 'metamask' && wallet_address === window.ethereum.selectedAddress) {
-      key = await getLitEncryptionKey(key, lit_chain);
+    if(lit_enabled){
+      let address = this.key_pair_type === 'ecdsa' ? ethers.utils.computeAddress(this.public_key) : null;
+
+      if(wallet_type === 'metamask' && this.key_pair_type === 'metamask' && wallet_address.toLowerCase() === window.ethereum.selectedAddress.toLowerCase()) {
+        key = await getLitEncryptionKey(key, lit_chain);
+      }
+      else if(wallet_type === 'selfguard,ecdsa' && public_key.toLowerCase() === address.toLowerCase()) {
+        //get Lit encryption key with manual auth sig
+        let authSig = await createAuthSig(this.private_key);
+        key = await getLitEncryptionKey(key, lit_chain, authSig);
+      }
     }
-    if(wallet_type === 'selfguard,ecdsa' && public_key === this.public_key) {
-      //get Lit encryption key with manual auth sig
-      let authSig = await createAuthSig(this.private_key);
-      key = await getLitEncryptionKey(key, lit_chain, authSig);
-    }
+    
+    return key;
   }
-  
-  return key;
+  catch(err){
+    console.log({err});
+    throw new Error(err);
+  }
 }

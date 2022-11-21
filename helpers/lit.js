@@ -19,7 +19,7 @@ export function getCondition(address,chain) {
             ],
             returnValueTest: {
             comparator: '=',
-            value: address
+            value: address.toLowerCase()
             }
         }
     ]
