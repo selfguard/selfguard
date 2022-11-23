@@ -1,5 +1,5 @@
-export async function getNotificationGroupByName(collection_name){
-  let data = await this.fetch.getNotificationGroupByName(collection_name);
+export async function getNotificationGroupByName(notification_group){
+  let data = await this.fetch.getNotificationGroupByName(notification_group);
   return data;
 }
 
@@ -8,18 +8,18 @@ export async function getNotificationGroups(){
   return data;
 }
 
-export async function createNotificationGroup({contract_address, collection_name}) {
-  let data = await this.fetch.createNotificationGroup({contract_address, collection_name});
+export async function createNotificationGroup({contract_address, notification_group}) {
+  let data = await this.fetch.createNotificationGroup({contract_address, notification_group});
   return data;
 }
 
-export async function deleteNotificationGroup({collection_name}) {
-  let data = await this.fetch.deleteNotificationGroup({collection_name});
+export async function deleteNotificationGroup({notification_group}) {
+  let data = await this.fetch.deleteNotificationGroup({notification_group});
   return data;
 }
 
-export async function updateNotificationGroup({old_collection_name, contract_address, collection_name}) {
-  let data = await this.fetch.updateNotificationGroup({old_collection_name, contract_address, collection_name});
+export async function updateNotificationGroup({old_notification_group, contract_address, notification_group}) {
+  let data = await this.fetch.updateNotificationGroup({old_notification_group, contract_address, notification_group});
   return data;
 }
 
@@ -28,8 +28,8 @@ export async function updateIntroductionMessage({notification_group_id, email_su
   return data;
 }
 
-export async function activateIntroductionMessage({collection_name,activate}) {
-  let data = await this.fetch.activateIntroductionMessage({collection_name,activate});
+export async function activateIntroductionMessage({notification_group,activate}) {
+  let data = await this.fetch.activateIntroductionMessage({notification_group,activate});
   return data;
 }
 

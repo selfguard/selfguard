@@ -2,9 +2,9 @@
  * It sends an email to the address provided.
  * @returns A boolean value of true if the email was sent.
  */
-export async function sendEmail({ user_address, collection_name, subject, body}) {
+export async function sendEmail({ user_address, notification_group, subject, body}) {
   try {
-    await this.fetch.sendEmailCall({user_address, collection_name, subject, body});
+    await this.fetch.sendEmailCall({user_address, notification_group, subject, body});
     return true;
   } catch (err) {
     console.log({ err });
@@ -16,9 +16,9 @@ export async function sendEmail({ user_address, collection_name, subject, body})
  * It sends an SMS to the address provided.
  * @returns A boolean value of true if the SMS was sent.
  */
-export async function sendSMS({ user_address, collection_name, text }) {
+export async function sendSMS({ user_address, notification_group, text }) {
   try {
-    await this.fetch.sendSMSCall({ user_address, collection_name, text });
+    await this.fetch.sendSMSCall({ user_address, notification_group, text });
     return true;
   } catch (err) {
     console.log({ err });
@@ -30,9 +30,9 @@ export async function sendSMS({ user_address, collection_name, text }) {
  * It sends an email to the address provided.
  * @returns A boolean value of true if the email was sent.
  */
- export async function sendBulkEmail({collection_name, subject, body}) {
+ export async function sendBulkEmail({notification_group, subject, body}) {
   try {
-    await this.fetch.sendBulkEmailCall({collection_name, subject, body});
+    await this.fetch.sendBulkEmailCall({notification_group, subject, body});
     return true;
   } catch (err) {
     console.log({ err });
@@ -44,9 +44,9 @@ export async function sendSMS({ user_address, collection_name, text }) {
  * It sends an SMS to the address provided.
  * @returns A boolean value of true if the SMS was sent.
  */
-export async function sendBulkSMS({collection_name, text }) {
+export async function sendBulkSMS({notification_group, text }) {
   try {
-    await this.fetch.sendBulkSMSCall({collection_name, text });
+    await this.fetch.sendBulkSMSCall({notification_group, text });
     return true;
   } catch (err) {
     console.log({ err });

@@ -182,8 +182,8 @@ export default class Fetch {
   }
 
   // Notifications
-  async getNotificationGroupByName(collection_name){
-    let result = await this.send("/getNotificationGroupByName",{collection_name});
+  async getNotificationGroupByName(notification_group){
+    let result = await this.send("/getNotificationGroupByName",{notification_group});
     return result.data;
   }
 
@@ -192,23 +192,23 @@ export default class Fetch {
     return result.data;
   }
 
-  async createNotificationGroup({contract_address, collection_name}){
-    let result = await this.send("/createNotificationGroup",{contract_address, collection_name});
+  async createNotificationGroup({contract_address, notification_group}){
+    let result = await this.send("/createNotificationGroup",{contract_address, notification_group});
     return result.data;
   }
 
-  async deleteNotificationGroup({collection_name}){
-    let result = await this.send("/deleteNotificationGroup",{collection_name});
+  async deleteNotificationGroup({notification_group}){
+    let result = await this.send("/deleteNotificationGroup",{notification_group});
     return result.data;
   }
 
-  async updateNotificationGroup({old_collection_name, contract_address, collection_name}){
-    let result = await this.send("/updateNotificationGroup",{old_collection_name, contract_address, collection_name});
+  async updateNotificationGroup({old_notification_group, contract_address, notification_group}){
+    let result = await this.send("/updateNotificationGroup",{old_notification_group, contract_address, notification_group});
     return result.data;
   }
 
-  async activateIntroductionMessage({collection_name,activate}){
-    let result = await this.send("/activateIntroductionMessage",{collection_name,activate});
+  async activateIntroductionMessage({notification_group,activate}){
+    let result = await this.send("/activateIntroductionMessage",{notification_group,activate});
     return result.data;
   }
 
@@ -217,38 +217,38 @@ export default class Fetch {
     return result.data;
   }
 
-  async updateProfile({collection_name, user_address, ciphertext, encryption_instance, email_activated, phone_activated}){
-    let result = await this.send("/updateProfile",{collection_name, user_address, ciphertext, encryption_instance, email_activated, phone_activated});
+  async updateProfile({notification_group, user_address, ciphertext, encryption_instance, email_activated, phone_activated}){
+    let result = await this.send("/updateProfile",{notification_group, user_address, ciphertext, encryption_instance, email_activated, phone_activated});
     return result.data;
   }
 
-  async getProfiles({limit, offset, collection_name}){
-    let result = await this.send("/getProfiles",{limit, offset, collection_name});
+  async getProfiles({limit, offset, notification_group}){
+    let result = await this.send("/getProfiles",{limit, offset, notification_group});
     return result.data;
   }
 
-  async getProfile({user_address, collection_name}){
-    let result = await this.send("/getProfile",{user_address, collection_name});
+  async getProfile({user_address, notification_group}){
+    let result = await this.send("/getProfile",{user_address, notification_group});
     return result.data;
   }
 
-  async sendSMSCall({user_address, collection_name, text}) {
-    let result = await this.send("/sendSMS",{ user_address, collection_name, text});
+  async sendSMSCall({user_address, notification_group, text}) {
+    let result = await this.send("/sendSMS",{ user_address, notification_group, text});
     return result.data;
   }
 
-  async sendEmailCall({user_address, collection_name, subject, body}) {
-    let result = await this.send("/sendEmail",{ user_address, collection_name, subject, body});
+  async sendEmailCall({user_address, notification_group, subject, body}) {
+    let result = await this.send("/sendEmail",{ user_address, notification_group, subject, body});
     return result.data;
   }
 
-  async sendBulkSMSCall({collection_name, text}) {
-    let result = await this.send("/sendBulkSMS",{collection_name, text});
+  async sendBulkSMSCall({notification_group, text}) {
+    let result = await this.send("/sendBulkSMS",{notification_group, text});
     return result.data;
   }
 
-  async sendBulkEmailCall({collection_name, subject, body}) {
-    let result = await this.send("/sendBulkEmail",{collection_name, subject, body});
+  async sendBulkEmailCall({notification_group, subject, body}) {
+    let result = await this.send("/sendBulkEmail",{notification_group, subject, body});
     return result.data;
   }
 

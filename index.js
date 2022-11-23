@@ -177,60 +177,60 @@ export default class SelfGuard {
   }
 
   //Notifications Functions
-  async sendEmail({user_address, collection_name, subject, body}){
-    return await sendEmail.call(this, {user_address, collection_name, subject,  body})
+  async sendEmail({user_address, notification_group, subject, body}){
+    return await sendEmail.call(this, {user_address, notification_group, subject,  body})
   }
 
-  async sendSMS({user_address, collection_name, text}){
-    return await sendSMS.call(this, {user_address, collection_name, text});
+  async sendSMS({user_address, notification_group, text}){
+    return await sendSMS.call(this, {user_address, notification_group, text});
   }
 
-  async sendBulkEmail({collection_name, subject, body}){
-    return await sendBulkEmail.call(this, {collection_name, subject, body})
+  async sendBulkEmail({notification_group, subject, body}){
+    return await sendBulkEmail.call(this, {notification_group, subject, body})
   }
 
-  async sendBulkSMS({collection_name, text}){
-    return await sendBulkSMS.call(this, {collection_name, text});
+  async sendBulkSMS({notification_group, text}){
+    return await sendBulkSMS.call(this, {notification_group, text});
   }
 
-  async updateProfile({user_address, value, collection_name}){
-    return await updateProfile.call(this, {user_address, value, collection_name})
+  async updateProfile({user_address, value, notification_group}){
+    return await updateProfile.call(this, {user_address, value, notification_group})
   }
 
-  async getProfiles({limit, offset, collection_name}){
-    return await getProfiles.call(this, {limit, offset, collection_name});
+  async getProfiles({limit, offset, notification_group}){
+    return await getProfiles.call(this, {limit, offset, notification_group});
   }
 
-  async getProfile({user_address, collection_name}) {
-    return await getProfile.call(this, {user_address, collection_name});
+  async getProfile({user_address, notification_group}) {
+    return await getProfile.call(this, {user_address, notification_group});
   }
   
-  async getNotificationGroupByName(collection_name) {
-    return await getNotificationGroupByName.call(this, collection_name);
+  async getNotificationGroupByName(notification_group) {
+    return await getNotificationGroupByName.call(this, notification_group);
   }
 
   async getNotificationGroups() {
     return await getNotificationGroups.call(this);
   }
 
-  async createNotificationGroup({contract_address, collection_name}) {
-    return await createNotificationGroup.call(this, {contract_address, collection_name});
+  async createNotificationGroup({contract_address, notification_group}) {
+    return await createNotificationGroup.call(this, {contract_address, notification_group});
   }
 
-  async activateIntroductionMessage({collection_name,activate}) {
-    return await activateIntroductionMessage.call(this, {collection_name,activate});
+  async activateIntroductionMessage({notification_group,activate}) {
+    return await activateIntroductionMessage.call(this, {notification_group,activate});
   }
 
   async updateIntroductionMessage({notification_group_id, email_subject, email_body, sms_text}) {
     return await updateIntroductionMessage.call(this, {notification_group_id, email_subject, email_body, sms_text});
   }
 
-  async updateNotificationGroup({old_collection_name, collection_name, contract_address}) {
-    return await updateNotificationGroup.call(this, {old_collection_name, collection_name, contract_address});
+  async updateNotificationGroup({old_notification_group, notification_group, contract_address}) {
+    return await updateNotificationGroup.call(this, {old_notification_group, notification_group, contract_address});
   }
 
-  async deleteNotificationGroup({collection_name}) {
-    return await deleteNotificationGroup.call(this, {collection_name});
+  async deleteNotificationGroup({notification_group}) {
+    return await deleteNotificationGroup.call(this, {notification_group});
   }
 
   async getNotificationCount(){
