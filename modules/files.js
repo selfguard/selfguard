@@ -25,10 +25,12 @@ export async function encryptFile(file, callback, metadata){
 
     if(!metadata) metadata = 'raw_r2_upload';
 
+    let name = file.name.replaceAll(`’`,'');
+
     await streamEncryptWeb(file, async (encrypted_bytes, encryption_key, chunkLength)=>{
 
       // //save the file to ipfs
-      let encrypted_file = new File([encrypted_bytes],file.name,{type:file.type});
+      let encrypted_file = new File([encrypted_bytes],name,{type:file.type});
 
       let cid = '';
 
@@ -60,7 +62,7 @@ export async function encryptFile(file, callback, metadata){
       i++;
     });
 
-    await this.fetch.saveFile({id:file_id,size: totalSize, name:file.name, type:file.type, document_hash, file_shards})
+    await this.fetch.saveFile({id:file_id,size: totalSize, name, type:file.type, document_hash, file_shards})
 
     callback(null, 100);
 
@@ -71,7 +73,7 @@ export async function encryptFile(file, callback, metadata){
       created_at: Date.now(),
       type: file.type,
       size: totalSize,
-      name: file.name
+      name
     }
   }
   catch(err){
