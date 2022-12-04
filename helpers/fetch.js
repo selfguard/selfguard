@@ -18,6 +18,12 @@ export default class Fetch {
     return result;
   }
 
+  //usage limits
+  async getUsageLimits(){
+    let result = await this.send("/getUsageLimits",{});
+    return result.data;
+  }
+
   // Encryption Keys
   async saveEncryptionKey({id, public_key, key, wallet_type, type, wallet_address, asymmetrically_encrypted,lit_chain, lit_enabled, no_encryption, asymmetric_encryption_type}){
     let result = await this.send("/saveEncryptionKey",{id, public_key, type, key, wallet_type, wallet_address,lit_chain, asymmetrically_encrypted, lit_enabled, no_encryption, asymmetric_encryption_type});

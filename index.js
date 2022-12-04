@@ -24,6 +24,8 @@ import {retrieveSharedFiles, retrieveSharedFile, decryptSharedFile,
   retrieveFileByLink, shareFile, deleteSharedFile
 } from './modules/shared_files.js';
 
+import {getUsageLimits} from './modules/usage_limits.js';
+
 import Fetch from './helpers/fetch.js';
 
 export default class SelfGuard {
@@ -35,6 +37,10 @@ export default class SelfGuard {
     this.public_key = public_key; //optional
     this.private_key = private_key; //optional
     this.fetch = new Fetch(this.api_key, this.key_pair_type, this.public_key, this.private_key, this.api_domain);
+  }
+
+  async getUsageLimits(){
+    return await getUsageLimits.call(this);
   }
 
   // Core Encryption Functions
