@@ -29,18 +29,28 @@ There are three main ways to instantiate SelfGuard.
 ### Without Asymmetric Encryption
 
 This instantiates SelfGuard such that data with SelfGuard can be decrypted with this API-KEY.
-```js
+
+```javascript
+
 let sg = new SelfGuard(API_KEY);
+
 ```
+
 ### With Asymmetric Encryption (Key Pair)
 This instantiates SelfGuard such that data encrypted with SelfGuard can only be decrypted by the user with the respective public/private key pair.
-```js
+
+```javascript
+
 let sg = new SelfGuard(API_KEY, key_pair_type, public_key, private_key);
+
 ```
+
 ### With Asymmetric Encryption (Metamask)
 This instantiates SelfGuard such that data encrypted with SelfGuard can only be decrypted by the end user's metamask's account.
-```js
+```javascript
+
 let sg = new SelfGuard(API_KEY, 'metamask');
+
 ```
 
 ## Key Pair
@@ -177,47 +187,6 @@ await sg.getKeys();
 ```
 
 
-## Encrypted Array Storage
-Used as an encrypted database to store key -> multiple values. Value data is fully encrypted by an encryption key set up at the initiation of the array. Value data can only be decrypted by users who have been assigned access to the encryption key via asymmetric encryption.
-
-### Create Array
-
-```javascript
-
-await sg.initArray('key');
-
-```
-
-### Add To Array
-```javascript
-
-await sg.addToArray('key','value');
-
-```
-
-### Add User To Array
-```javascript
-
-await sg.addUserToArray('key','0xabc...');
-
-```
-
-
-### Get Array
-```javascript
-
-let data = await sg.getArray('key');
-
-```
-
-### Get Array Names
-```javascript
-
-let keys = await sg.getArrayNames();
-
-```
-
-
 ## Notifications
 Used to send texts or emails to addresses who's email and phone number are stored using the encrypted key/value storage.
 
@@ -230,15 +199,15 @@ npm install selfguard-react-components
 
 Implement Component
 ```javascript
-import { Notifications } from  'selfguard-react-components';
+import { NotificationsButton } from  'selfguard-react-components';
 return (
-	<Notifications
-    api_key={api_key}
-    collection_name={collection_name}
-    userAddress={userAddress}
-    sms_text={sms_text}
-    email_subject={email_subject}
-    email_body={email_body}
+	<NotificationsButton
+    api_key={api_key} 
+    notification_group={notification_group} 
+    user_address={user_address}
+    background={background}
+    size={size}
+    color={color}
     onDisabled={onDisabled}
     onEnabled={onEnabled}
 />
@@ -247,21 +216,20 @@ return (
 ### Update Profile
 ```javascript
 
-await sg.updateProfile({user_address, value, collection_name});
+await sg.updateProfile({user_address, value, notification_group});
 
 ```
-
 
 ### Send SMS
 ```javascript
 
-await sg.sendSMS({user_address,collection_name,text});
+await sg.sendSMS({user_address,notification_group,text});
 
 ```
 
 ### Send Email
 ```javascript
 
-await sg.sendEmail({user_address,collection_name, subject, body});
+await sg.sendEmail({user_address,notification_group, subject, body});
 
 ```

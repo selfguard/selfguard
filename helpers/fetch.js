@@ -18,12 +18,6 @@ export default class Fetch {
     return result;
   }
 
-  //usage limits
-  async getUsageLimits(){
-    let result = await this.send("/getUsageLimits",{});
-    return result.data;
-  }
-
   // Encryption Keys
   async saveEncryptionKey({id, public_key, key, wallet_type, type, wallet_address, asymmetrically_encrypted,lit_chain, lit_enabled, no_encryption, asymmetric_encryption_type}){
     let result = await this.send("/saveEncryptionKey",{id, public_key, type, key, wallet_type, wallet_address,lit_chain, asymmetrically_encrypted, lit_enabled, no_encryption, asymmetric_encryption_type});
@@ -32,6 +26,54 @@ export default class Fetch {
 
   async retrieveEncryptionKey(id){
     let result = await this.send("/retrieveEncryptionKey",{id});
+    return result.data;
+  }
+  
+   // Tokenization 
+   async saveTokenizedData({id, ciphertext, encryption_instance}){
+    let result = await this.send("/saveTokenizedData",{id, ciphertext, encryption_instance});
+    return result.data;
+  }
+
+  async updateTokenizedData({id, ciphertext, encryption_instance}){
+    let result = await this.send("/updateTokenizedData",{id, ciphertext, encryption_instance});
+    return result.data;
+  }
+
+  async retrieveTokenizedData(id){
+    let result = await this.send("/retrieveTokenizedData",{id});
+    return result.data;
+  }
+
+  // Key Value 
+  async saveKeyValueData({key, ciphertext, encryption_instance}){
+    let result = await this.send("/saveKeyValueData",{ key, ciphertext, encryption_instance});
+    return result.data;
+  }
+
+  async updateKeyValueData({key, ciphertext, encryption_instance}){
+    let result = await this.send("/updateKeyValueData",{ key, ciphertext, encryption_instance});
+    return result.data;
+  }
+
+  async retrieveKeyValueData(key){
+    let result = await this.send("/retrieveKeyValueData",{ key});
+    return result.data;
+  }
+
+  async retrieveAllKeys({gte, limit}){
+    let result = await this.send("/retrieveAllKeys",{gte, limit});
+    return result.data;
+  }
+
+  // Key Pair
+  async saveKeyPair({public_key, encrypted_private_key,type}){
+    let result = await this.send("/saveKeyPair",{public_key, encrypted_private_key, type});
+    return result.data;
+  }
+
+  async retrieveKeyPairs(){
+    let result = await this.send("/retrieveKeyPairs",{});
     return result.data;
   }
 
@@ -105,86 +147,6 @@ export default class Fetch {
   async retrieveFileByLink(id){
     let result = await this.send("/retrieveFileByLink",{id});
     return result.data
-  }
-  
-   // Tokenization 
-   async saveTokenizedData({id, ciphertext, encryption_instance}){
-    let result = await this.send("/saveTokenizedData",{id, ciphertext, encryption_instance});
-    return result.data;
-  }
-
-  async updateTokenizedData({id, ciphertext, encryption_instance}){
-    let result = await this.send("/updateTokenizedData",{id, ciphertext, encryption_instance});
-    return result.data;
-  }
-
-  async retrieveTokenizedData(id){
-    let result = await this.send("/retrieveTokenizedData",{id});
-    return result.data;
-  }
-
-  // Key Pair
-  async saveKeyPair({public_key, encrypted_private_key,type}){
-    let result = await this.send("/saveKeyPair",{public_key, encrypted_private_key, type});
-    return result.data;
-  }
-
-  async retrieveKeyPairs(){
-    let result = await this.send("/retrieveKeyPairs",{});
-    return result.data;
-  }
- 
-
-  // Key Value 
-  async saveKeyValueData({key, ciphertext, encryption_instance}){
-    let result = await this.send("/saveKeyValueData",{ key, ciphertext, encryption_instance});
-    return result.data;
-  }
-
-  async updateKeyValueData({key, ciphertext, encryption_instance}){
-    let result = await this.send("/updateKeyValueData",{ key, ciphertext, encryption_instance});
-    return result.data;
-  }
-
-  async retrieveKeyValueData(key){
-    let result = await this.send("/retrieveKeyValueData",{ key});
-    return result.data;
-  }
-
-  async retrieveAllKeys({gte, limit}){
-    let result = await this.send("/retrieveAllKeys",{gte, limit});
-    return result.data;
-  }
-
-   // Array 
-   async initArray(name) {
-    let result = await this.send("/initArray",{name });
-    return result.data;
-  }
-
-  async saveArrayEncryptionKey({name, encryption_key, user_pub_key}) {
-    let result = await this.send("/saveArrayEncryptionKey",{name, encryption_key, user_pub_key});
-    return result.data;
-  }
-
-  async saveArrayValue({ciphertext, name}) {
-    let result = await this.send("/saveArrayValue",{ciphertext, name});
-    return result.data;
-  }
-
-  async getArrayValues({gte, limit, name}) {
-    let result = await this.send("/getArrayValues",{gte, limit, name});
-    return result.data;
-  }
-
-  async getArrayNames() {
-    let result = await this.send("/getArrayNames",{});
-    return result.data;
-  }
-
-  async getArrayEncryptionKeys(name) {
-    let result = await this.send("/getArrayEncryptionKeys",{name});
-    return result.data;
   }
 
   // Notifications
@@ -266,6 +228,12 @@ export default class Fetch {
   // Events
   async retrieveEvents(){
     let result = await this.send("/retrieveEvents",{});
+    return result.data;
+  }
+
+  // Usage Limits
+  async getUsageLimits(){
+    let result = await this.send("/getUsageLimits",{});
     return result.data;
   }
 }

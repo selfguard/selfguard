@@ -8,8 +8,6 @@ import {tokenize, detokenize} from './modules/data_tokenization.js';
 import {encryptFile, decryptFile, getRawFile, getFiles, getFileEncryptionKeys, retrieveFileShareData, getTotalFileSizeUploaded} from './modules/files.js';
 //Key Pair Functions
 import {createKeyPair, getKeyPairs, uploadKeyPair} from './modules/key_pair.js';
-//Array Functions
-import {initArray, addUserToArray, addToArray, getArray, getArrayNames, getMyEncryptionKeyForArray} from './modules/array.js'
 //Key Value Functions
 import {get, put, getKeys} from './modules/key_value.js';
 //Notification Functions
@@ -39,6 +37,7 @@ export default class SelfGuard {
     this.fetch = new Fetch(this.api_key, this.key_pair_type, this.public_key, this.private_key, this.api_domain);
   }
 
+  //Usage Limits
   async getUsageLimits(){
     return await getUsageLimits.call(this);
   }
@@ -155,31 +154,6 @@ export default class SelfGuard {
 
   async getKeys(options) {
     return await getKeys.call(this, options);
-  }
-
-  // Array Functions
-  async initArray(name){
-    return await initArray.call(this, name);
-  }
-
-  async addUserToArray(name, user_pub_key){
-    return await addUserToArray.call(this, name, user_pub_key);
-  }
-
-  async addToArray(name, value) {
-    return await addToArray.call(this, name, value);
-  }
-
-  async getArray(name, gte, limit){
-    return await getArray.call(this, name, gte, limit);
-  }
-
-  async getArrayNames() {
-    return await getArrayNames.call(this);
-  }
-
-  async getMyEncryptionKeyForArray(name){
-    return await getMyEncryptionKeyForArray.call(this, name);
   }
 
   //Notifications Functions
